@@ -8,6 +8,7 @@ import { RecordDetail } from '@/components/transport/RecordDetail';
 import { ComprobanteModal } from '@/components/transport/ComprobanteModal';
 import { LoginScreen } from '@/components/transport/LoginScreen';
 import { PersonalScreen } from '@/components/transport/PersonalScreen';
+import { ReportsScreen } from '@/components/transport/ReportsScreen';
 import { type AppView, type RecordFormData, type SavedRecord, type UserSession, num } from '@/components/transport/types';
 import { useToast } from '@/hooks/use-toast';
 
@@ -143,6 +144,15 @@ export default function Home() {
     );
   }
 
+  // Reports screen (admin only)
+  if (view === 'reports') {
+    return (
+      <ReportsScreen
+        onBack={() => setView('home')}
+      />
+    );
+  }
+
   switch (view) {
     case 'form':
       return (
@@ -169,7 +179,7 @@ export default function Home() {
           onGoToForm={() => setView('form')}
           onGoToHistory={() => setView('history')}
           onGoToPersonal={() => setView('personal')}
-          onGoToReports={() => {}}
+          onGoToReports={() => setView('reports')}
           onLogout={handleLogout}
           recordCount={recordCount}
         />

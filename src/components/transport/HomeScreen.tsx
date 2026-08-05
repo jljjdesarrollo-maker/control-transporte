@@ -1,6 +1,6 @@
 'use client';
 
-import { History, Pencil, Truck, Users, LogOut, User } from 'lucide-react';
+import { History, Pencil, Truck, Users, LogOut, User, FileText } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import type { UserSession } from './types';
@@ -92,18 +92,18 @@ export function HomeScreen({ user, isAdmin, onGoToForm, onGoToHistory, onGoToPer
               </CardContent>
             </Card>
 
-            {/* Reports (future) */}
+            {/* Reports */}
             <Card
               onClick={onGoToReports}
               className="cursor-pointer hover:shadow-md transition-shadow rounded-2xl border border-[#D6D6D6] bg-white"
             >
               <CardContent className="flex items-center gap-3 p-4">
-                <div className="w-10 h-10 rounded-xl bg-[#3A3A3A]/10 flex items-center justify-center">
-                  <History className="w-5 h-5 text-[#3A3A3A]" />
+                <div className="w-10 h-10 rounded-xl bg-[#912D26]/10 flex items-center justify-center">
+                  <FileText className="w-5 h-5 text-[#912D26]" />
                 </div>
                 <div>
                   <p className="font-semibold text-[#3A3A3A]">Reportes</p>
-                  <p className="text-xs text-[#3A3A3A]/60">Reportes consolidados (proximamente)</p>
+                  <p className="text-xs text-[#3A3A3A]/60">Reportes consolidados PDF</p>
                 </div>
               </CardContent>
             </Card>
@@ -126,7 +126,7 @@ export function HomeScreen({ user, isAdmin, onGoToForm, onGoToHistory, onGoToPer
 
       {/* Footer */}
       <footer className="py-4 text-center text-xs text-[#3A3A3A]/40">
-        Transporte Control v2.1
+        Transporte Control v2.3
       </footer>
     </div>
   );
