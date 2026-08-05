@@ -106,21 +106,23 @@ export function RecordForm({ saving, error, onBack, onSave }: RecordFormProps) {
 
   const allRouteOptions = routes.map((r) => getRouteLabel(r.from, r.to));
 
+  const isOddTrip = (index: number) => (index + 1) % 2 !== 0;
+
   return (
-    <div className="flex flex-col min-h-[100dvh] bg-gray-50">
-      <header className="sticky top-0 z-10 bg-white border-b border-gray-100 px-4 py-3 flex items-center justify-between">
+    <div className="flex flex-col min-h-[100dvh] bg-[#FAFAFA]">
+      <header className="sticky top-0 z-10 bg-white border-b border-[#D6D6D6] px-4 py-3 flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <Button variant="ghost" size="icon" onClick={onBack} className="rounded-xl">
+          <Button variant="ghost" size="icon" onClick={onBack} className="rounded-xl text-[#3A3A3A]">
             <ArrowLeft className="w-5 h-5" />
           </Button>
           <div>
-            <h1 className="text-lg font-semibold text-gray-900">Registro del Dia</h1>
+            <h1 className="text-lg font-semibold text-[#3A3A3A]">Registro del Dia</h1>
           </div>
         </div>
         <Button
           onClick={handleSave}
           disabled={saving}
-          className="h-10 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-sm"
+          className="h-10 px-4 rounded-xl bg-[#912D26] hover:bg-[#7A2520] text-white font-semibold text-sm"
         >
           {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4 mr-1" />}
           {saving ? 'Guardando...' : 'Guardar'}
@@ -135,71 +137,71 @@ export function RecordForm({ saving, error, onBack, onSave }: RecordFormProps) {
             </div>
           )}
 
-          {/* 1. Cabecera */}
-          <Card className="rounded-2xl border-0 shadow-sm">
+          {/* 1. Cabecera - Fechas y Km */}
+          <Card className="rounded-2xl border border-[#D6D6D6] bg-white">
             <CardContent className="p-4 space-y-3">
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1.5">
-                  <Label className="text-xs font-medium text-gray-500">Fecha de Registro</Label>
+                  <Label className="text-xs font-medium text-[#3A3A3A]/60">Fecha de Registro</Label>
                   <Input
                     type="text"
                     value={new Date().toLocaleDateString('es-EC', { day: '2-digit', month: '2-digit', year: 'numeric' })}
                     readOnly
-                    className="rounded-xl h-11 bg-gray-100 text-gray-500 cursor-not-allowed"
+                    className="rounded-xl h-11 bg-[#F5F5F5] text-[#3A3A3A]/50 cursor-not-allowed border-[#D6D6D6]"
                   />
                 </div>
                 <div className="space-y-1.5">
-                  <Label className="text-xs font-medium text-gray-500">Fecha de Operacion</Label>
+                  <Label className="text-xs font-medium text-[#3A3A3A]/60">Fecha de Operacion</Label>
                   <Input
                     type="date"
                     value={form.date}
                     onChange={(e) => updateField('date', e.target.value)}
-                    className="rounded-xl h-11"
+                    className="rounded-xl h-11 border-[#D6D6D6]"
                   />
                 </div>
               </div>
               <div className="space-y-1.5">
-                <Label className="text-xs font-medium text-gray-500">Kilometraje</Label>
+                <Label className="text-xs font-medium text-[#3A3A3A]/60">Kilometraje</Label>
                 <Input
                   type="text"
                   inputMode="numeric"
                   placeholder="877604"
                   value={form.km}
                   onChange={(e) => updateField('km', e.target.value)}
-                  className="rounded-xl h-11"
+                  className="rounded-xl h-11 border-[#D6D6D6]"
                 />
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1.5">
-                  <Label className="text-xs font-medium text-gray-500">Conductor</Label>
+                  <Label className="text-xs font-medium text-[#3A3A3A]/60">Conductor</Label>
                   <Input
                     placeholder="Nombre del conductor"
                     value={form.conductor}
                     onChange={(e) => updateField('conductor', e.target.value)}
-                    className="rounded-xl h-11"
+                    className="rounded-xl h-11 border-[#D6D6D6]"
                   />
                 </div>
                 <div className="space-y-1.5">
-                  <Label className="text-xs font-medium text-gray-500">Ayudante</Label>
+                  <Label className="text-xs font-medium text-[#3A3A3A]/60">Ayudante</Label>
                   <Input
                     placeholder="Nombre del ayudante"
                     value={form.ayudanteNombre}
                     onChange={(e) => updateField('ayudanteNombre', e.target.value)}
-                    className="rounded-xl h-11"
+                    className="rounded-xl h-11 border-[#D6D6D6]"
                   />
                 </div>
               </div>
 
               {/* Foto opcional */}
               <div>
-                <Label className="text-xs font-medium text-gray-500">Foto del Cuaderno (Opcional)</Label>
+                <Label className="text-xs font-medium text-[#3A3A3A]/60">Foto del Cuaderno (Opcional)</Label>
                 <div className="mt-1.5">
                   {photoPreview ? (
-                    <div className="relative w-20 h-20 rounded-xl overflow-hidden border-2 border-emerald-200">
+                    <div className="relative w-20 h-20 rounded-xl overflow-hidden border-2 border-[#912D26]">
                       <img src={photoPreview} alt="Foto" className="w-full h-full object-cover" />
                       <button
                         onClick={() => setPhotoPreview(null)}
-                        className="absolute top-0 right-0 w-5 h-5 bg-red-500 text-white rounded-bl-lg flex items-center justify-center"
+                        className="absolute top-0 right-0 w-5 h-5 bg-[#912D26] text-white rounded-bl-lg flex items-center justify-center"
                       >
                         <X className="w-3 h-3" />
                       </button>
@@ -208,7 +210,7 @@ export function RecordForm({ saving, error, onBack, onSave }: RecordFormProps) {
                     <Button
                       type="button"
                       variant="outline"
-                      className="h-10 px-4 rounded-xl text-xs"
+                      className="h-10 px-4 rounded-xl text-xs border-[#D6D6D6] text-[#3A3A3A]"
                       onClick={() => fileInputRef.current?.click()}
                     >
                       <Camera className="w-4 h-4 mr-1" />
@@ -221,38 +223,41 @@ export function RecordForm({ saving, error, onBack, onSave }: RecordFormProps) {
           </Card>
 
           {/* 2. Frecuencias */}
-          <Card className="rounded-2xl border-0 shadow-sm">
+          <Card className="rounded-2xl border border-[#D6D6D6] bg-white">
             <CardHeader className="pb-2 pt-4 px-4">
               <div className="flex items-center justify-between">
-                <CardTitle className="text-base font-semibold">Frecuencias del Dia</CardTitle>
-                <Button onClick={addTrip} size="sm" variant="outline" className="h-8 rounded-lg text-xs border-dashed">
+                <CardTitle className="text-base font-semibold text-[#3A3A3A]">Frecuencias del Dia</CardTitle>
+                <Button onClick={addTrip} size="sm" variant="outline" className="h-8 rounded-lg text-xs border-dashed border-[#D6D6D6] text-[#3A3A3A]">
                   <Plus className="w-3.5 h-3.5 mr-1" /> Agregar
                 </Button>
               </div>
             </CardHeader>
             <CardContent className="px-4 pb-4 space-y-3">
               {form.trips.length === 0 && (
-                <div className="text-center py-6 text-gray-400 text-sm">
+                <div className="text-center py-6 text-[#3A3A3A]/40 text-sm">
                   <p>Toca &quot;Agregar&quot; para registrar frecuencias</p>
                 </div>
               )}
               {form.trips.map((trip, index) => {
                 const tripTimes = getTimesForRoute(trip.routeFrom, trip.routeTo);
+                const odd = isOddTrip(index);
                 return (
-                  <div key={index} className="bg-gray-50 rounded-xl p-3 space-y-2">
+                  <div key={index} className={`rounded-xl p-3 space-y-2 border-l-4 ${odd ? 'border-l-[#912D26] bg-[#912D26]/5' : 'border-l-[#3A3A3A] bg-[#3A3A3A]/5'}`}>
                     <div className="flex items-center justify-between">
-                      <span className="text-xs font-bold text-emerald-600">Frecuencia #{index + 1}</span>
-                      <Button onClick={() => removeTrip(index)} variant="ghost" size="icon" className="h-7 w-7 text-gray-400 hover:text-red-500">
+                      <span className={`text-xs font-bold ${odd ? 'text-[#912D26]' : 'text-[#3A3A3A]'}`}>
+                        Frecuencia #{index + 1} {odd ? '(Loja → Vilca)' : '(Vilca → Loja)'}
+                      </span>
+                      <Button onClick={() => removeTrip(index)} variant="ghost" size="icon" className="h-7 w-7 text-[#3A3A3A]/40 hover:text-red-500">
                         <Trash2 className="w-3.5 h-3.5" />
                       </Button>
                     </div>
 
                     <div className="space-y-1">
-                      <Label className="text-[10px] text-gray-400">Ruta</Label>
+                      <Label className="text-[10px] text-[#3A3A3A]/50">Ruta</Label>
                       <select
                         value={getRouteLabel(trip.routeFrom, trip.routeTo)}
                         onChange={(e) => handleRouteSelect(index, e.target.value)}
-                        className="w-full h-9 rounded-lg border border-gray-200 bg-white px-2 text-sm"
+                        className="w-full h-9 rounded-lg border border-[#D6D6D6] bg-white px-2 text-sm text-[#3A3A3A]"
                       >
                         {allRouteOptions.map((opt) => (
                           <option key={opt} value={opt}>{opt}</option>
@@ -261,12 +266,12 @@ export function RecordForm({ saving, error, onBack, onSave }: RecordFormProps) {
                     </div>
 
                     <div className="space-y-1">
-                      <Label className="text-[10px] text-gray-400">Hora de Salida</Label>
+                      <Label className="text-[10px] text-[#3A3A3A]/50">Hora de Salida</Label>
                       {tripTimes.length > 0 ? (
                         <select
                           value={trip.time}
                           onChange={(e) => updateTrip(index, 'time', e.target.value)}
-                          className="w-full h-9 rounded-lg border border-gray-200 bg-white px-2 text-sm"
+                          className="w-full h-9 rounded-lg border border-[#D6D6D6] bg-white px-2 text-sm text-[#3A3A3A]"
                         >
                           <option value="">-- Seleccionar --</option>
                           {tripTimes.map((t) => (
@@ -278,30 +283,30 @@ export function RecordForm({ saving, error, onBack, onSave }: RecordFormProps) {
                           placeholder="HH:MM"
                           value={trip.time}
                           onChange={(e) => updateTrip(index, 'time', e.target.value)}
-                          className="h-9 text-sm rounded-lg"
+                          className="h-9 text-sm rounded-lg border-[#D6D6D6]"
                         />
                       )}
                     </div>
 
                     <div className="grid grid-cols-2 gap-2">
                       <div className="space-y-1">
-                        <Label className="text-[10px] text-gray-400">Ingreso (Produccion)</Label>
+                        <Label className="text-[10px] text-[#3A3A3A]/50">Ingreso (Produccion)</Label>
                         <Input
                           type="number"
                           inputMode="decimal"
                           value={trip.income}
                           onChange={(e) => updateTrip(index, 'income', e.target.value)}
-                          className="h-9 text-sm rounded-lg"
+                          className="h-9 text-sm rounded-lg border-[#D6D6D6]"
                         />
                       </div>
                       <div className="space-y-1">
-                        <Label className="text-[10px] text-gray-400">Boletos (Caja Comun)</Label>
+                        <Label className="text-[10px] text-[#3A3A3A]/50">Boletos (Caja Comun)</Label>
                         <Input
                           type="number"
                           inputMode="decimal"
                           value={trip.boletos}
                           onChange={(e) => updateTrip(index, 'boletos', e.target.value)}
-                          className="h-9 text-sm rounded-lg"
+                          className="h-9 text-sm rounded-lg border-[#D6D6D6]"
                         />
                       </div>
                     </div>
@@ -312,11 +317,11 @@ export function RecordForm({ saving, error, onBack, onSave }: RecordFormProps) {
           </Card>
 
           {/* 3. Gastos */}
-          <Card className="rounded-2xl border-0 shadow-sm">
+          <Card className="rounded-2xl border border-[#D6D6D6] bg-white">
             <CardHeader className="pb-2 pt-4 px-4">
               <div className="flex items-center justify-between">
                 <CardTitle className="text-base font-semibold text-red-600">Gastos</CardTitle>
-                <Button onClick={addExpense} size="sm" variant="outline" className="h-8 rounded-lg text-xs border-dashed">
+                <Button onClick={addExpense} size="sm" variant="outline" className="h-8 rounded-lg text-xs border-dashed border-[#D6D6D6] text-[#3A3A3A]">
                   <Plus className="w-3.5 h-3.5 mr-1" /> Agregar
                 </Button>
               </div>
@@ -328,7 +333,7 @@ export function RecordForm({ saving, error, onBack, onSave }: RecordFormProps) {
                     placeholder="Descripcion"
                     value={exp.description}
                     onChange={(e) => updateExpense(index, 'description', e.target.value)}
-                    className="h-10 text-sm rounded-lg flex-1"
+                    className="h-10 text-sm rounded-lg flex-1 border-[#D6D6D6]"
                   />
                   <Input
                     type="number"
@@ -336,10 +341,10 @@ export function RecordForm({ saving, error, onBack, onSave }: RecordFormProps) {
                     placeholder="0.00"
                     value={exp.amount}
                     onChange={(e) => updateExpense(index, 'amount', e.target.value)}
-                    className="h-10 text-sm rounded-lg w-24"
+                    className="h-10 text-sm rounded-lg w-24 border-[#D6D6D6]"
                   />
                   {index >= 4 && (
-                    <Button onClick={() => removeExpense(index)} variant="ghost" size="icon" className="h-8 w-8 text-gray-400 hover:text-red-500 shrink-0">
+                    <Button onClick={() => removeExpense(index)} variant="ghost" size="icon" className="h-8 w-8 text-[#3A3A3A]/40 hover:text-red-500 shrink-0">
                       <Trash2 className="w-3.5 h-3.5" />
                     </Button>
                   )}
@@ -352,29 +357,68 @@ export function RecordForm({ saving, error, onBack, onSave }: RecordFormProps) {
             </CardContent>
           </Card>
 
-          {/* 4. Tickets */}
-          <Card className="rounded-2xl border-0 shadow-sm">
+          {/* 5. Resumen - en zona inferior para one-handed */}
+          <Card className="rounded-2xl bg-[#3A3A3A] text-white">
+            <CardContent className="p-4 space-y-3">
+              <p className="text-xs font-bold uppercase tracking-wider text-white/50">Liquidacion del Dia</p>
+              <div className="flex justify-between text-sm">
+                <span className="text-white/60">Produccion</span>
+                <span className="font-semibold">S/ {totals.production.toFixed(2)}</span>
+              </div>
+              <div className="flex justify-between text-sm">
+                <span className="text-white/60">Caja Comun (Boletos)</span>
+                <span className="font-semibold">S/ {totals.cajaComun.toFixed(2)}</span>
+              </div>
+              <Separator className="bg-white/10" />
+              <div className="flex justify-between text-sm">
+                <span className="text-white/60">Total Gastos</span>
+                <span className="font-semibold text-red-400">S/ {totals.totalGastos.toFixed(2)}</span>
+              </div>
+              <div className="flex justify-between text-sm">
+                <span className="text-white/60">Tickets</span>
+                <span className="font-semibold">S/ {totals.tickets.toFixed(2)}</span>
+              </div>
+              <Separator className="bg-white/10" />
+              <div className="flex justify-between">
+                <span className="text-sm text-white/80">Entrega Ayudante</span>
+                <span className={`font-bold ${totals.entregaAyudante >= 0 ? 'text-[#4ADE80]' : 'text-red-400'}`}>
+                  S/ {totals.entregaAyudante.toFixed(2)}
+                </span>
+              </div>
+              <p className="text-[10px] text-white/30">Produccion - Total Gastos</p>
+              <div className="flex justify-between">
+                <span className="text-sm text-white/80">Entrega Compania</span>
+                <span className={`font-bold ${totals.entregaCompania >= 0 ? 'text-[#4ADE80]' : 'text-red-400'}`}>
+                  S/ {totals.entregaCompania.toFixed(2)}
+                </span>
+              </div>
+              <p className="text-[10px] text-white/30">Caja Comun - Tickets</p>
+            </CardContent>
+          </Card>
+
+          {/* 4. Tickets - zona inferior para one-handed */}
+          <Card className="rounded-2xl border border-[#D6D6D6] bg-white">
             <CardContent className="p-4">
-              <Label className="text-xs font-medium text-gray-500 mb-2 block">Tickets</Label>
-              <div className="grid grid-cols-3 gap-2">
+              <Label className="text-xs font-medium text-[#3A3A3A]/60 mb-3 block">Tickets</Label>
+              <div className="grid grid-cols-3 gap-3">
                 <button
                   type="button"
                   onClick={() => updateField('tickets', '4.50')}
-                  className={`h-11 rounded-xl text-sm font-semibold border-2 transition-colors ${form.tickets === '4.50' ? 'bg-emerald-600 border-emerald-600 text-white' : 'bg-white border-gray-200 text-gray-700 hover:border-emerald-300'}`}
+                  className={`h-14 rounded-xl text-base font-bold border-2 transition-all active:scale-95 ${form.tickets === '4.50' ? 'bg-[#912D26] border-[#912D26] text-white shadow-lg shadow-[#912D26]/20' : 'bg-white border-[#D6D6D6] text-[#3A3A3A] hover:border-[#912D26]'}`}
                 >
                   $4.50
                 </button>
                 <button
                   type="button"
                   onClick={() => updateField('tickets', '6.00')}
-                  className={`h-11 rounded-xl text-sm font-semibold border-2 transition-colors ${form.tickets === '6.00' ? 'bg-emerald-600 border-emerald-600 text-white' : 'bg-white border-gray-200 text-gray-700 hover:border-emerald-300'}`}
+                  className={`h-14 rounded-xl text-base font-bold border-2 transition-all active:scale-95 ${form.tickets === '6.00' ? 'bg-[#912D26] border-[#912D26] text-white shadow-lg shadow-[#912D26]/20' : 'bg-white border-[#D6D6D6] text-[#3A3A3A] hover:border-[#912D26]'}`}
                 >
                   $6.00
                 </button>
                 <button
                   type="button"
                   onClick={() => updateField('tickets', '')}
-                  className={`h-11 rounded-xl text-sm font-semibold border-2 transition-colors ${form.tickets === '' ? 'bg-red-500 border-red-500 text-white' : 'bg-white border-gray-200 text-gray-400 hover:border-red-300'}`}
+                  className={`h-14 rounded-xl text-base font-bold border-2 transition-all active:scale-95 ${form.tickets === '' ? 'bg-[#3A3A3A] border-[#3A3A3A] text-white' : 'bg-white border-[#D6D6D6] text-[#3A3A3A]/40 hover:border-[#3A3A3A]'}`}
                 >
                   Ninguno
                 </button>
@@ -382,49 +426,11 @@ export function RecordForm({ saving, error, onBack, onSave }: RecordFormProps) {
             </CardContent>
           </Card>
 
-          {/* 5. Resumen */}
-          <Card className="rounded-2xl border-0 shadow-sm bg-gray-900 text-white">
-            <CardContent className="p-4 space-y-3">
-              <p className="text-xs font-bold uppercase tracking-wider text-gray-400">Liquidacion del Dia</p>
-              <div className="flex justify-between text-sm">
-                <span className="text-gray-400">Produccion</span>
-                <span className="font-semibold">S/ {totals.production.toFixed(2)}</span>
-              </div>
-              <div className="flex justify-between text-sm">
-                <span className="text-gray-400">Caja Comun (Boletos)</span>
-                <span className="font-semibold">S/ {totals.cajaComun.toFixed(2)}</span>
-              </div>
-              <Separator className="bg-gray-700" />
-              <div className="flex justify-between text-sm">
-                <span className="text-gray-400">Total Gastos</span>
-                <span className="font-semibold text-red-400">S/ {totals.totalGastos.toFixed(2)}</span>
-              </div>
-              <div className="flex justify-between text-sm">
-                <span className="text-gray-400">Tickets</span>
-                <span className="font-semibold">S/ {totals.tickets.toFixed(2)}</span>
-              </div>
-              <Separator className="bg-gray-700" />
-              <div className="flex justify-between text-sm">
-                <span className="text-gray-300">Entrega Ayudante</span>
-                <span className={`font-bold ${totals.entregaAyudante >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
-                  S/ {totals.entregaAyudante.toFixed(2)}
-                </span>
-              </div>
-              <p className="text-[10px] text-gray-500">Produccion - Total Gastos</p>
-              <div className="flex justify-between text-sm">
-                <span className="text-gray-300">Entrega Compania</span>
-                <span className={`font-bold ${totals.entregaCompania >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
-                  S/ {totals.entregaCompania.toFixed(2)}
-                </span>
-              </div>
-              <p className="text-[10px] text-gray-500">Caja Comun - Tickets</p>
-            </CardContent>
-          </Card>
-
+          {/* Boton Guardar - zona inferior */}
           <Button
             onClick={handleSave}
             disabled={saving}
-            className="w-full h-14 text-base font-semibold rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white shadow-lg shadow-emerald-200"
+            className="w-full h-14 text-base font-semibold rounded-2xl bg-[#912D26] hover:bg-[#7A2520] text-white shadow-lg shadow-[#912D26]/20 active:scale-[0.98] transition-transform"
           >
             {saving ? <Loader2 className="w-5 h-5 animate-spin mr-2" /> : <Save className="w-5 h-5 mr-2" />}
             {saving ? 'Guardando...' : 'Guardar Registro'}

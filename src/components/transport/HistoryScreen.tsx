@@ -61,77 +61,77 @@ export function HistoryScreen({ onBack, onViewRecord }: HistoryScreenProps) {
   if (loading) {
     return (
       <div className="flex flex-col min-h-[100dvh] bg-white">
-        <header className="flex items-center gap-3 p-4 border-b border-gray-100">
-          <Button variant="ghost" size="icon" onClick={onBack} className="rounded-xl">
+        <header className="flex items-center gap-3 p-4 border-b border-[#D6D6D6]">
+          <Button variant="ghost" size="icon" onClick={onBack} className="rounded-xl text-[#3A3A3A]">
             <ArrowLeft className="w-5 h-5" />
           </Button>
-          <h1 className="text-lg font-semibold text-gray-900">Historial</h1>
+          <h1 className="text-lg font-semibold text-[#3A3A3A]">Historial</h1>
         </header>
         <main className="flex-1 flex items-center justify-center">
-          <Loader2 className="w-8 h-8 text-emerald-600 animate-spin" />
+          <Loader2 className="w-8 h-8 text-[#912D26] animate-spin" />
         </main>
       </div>
     );
   }
 
   return (
-    <div className="flex flex-col min-h-[100dvh] bg-gray-50">
-      <header className="sticky top-0 z-10 bg-white border-b border-gray-100 px-4 py-3 flex items-center gap-3">
-        <Button variant="ghost" size="icon" onClick={onBack} className="rounded-xl">
+    <div className="flex flex-col min-h-[100dvh] bg-[#FAFAFA]">
+      <header className="sticky top-0 z-10 bg-white border-b border-[#D6D6D6] px-4 py-3 flex items-center gap-3">
+        <Button variant="ghost" size="icon" onClick={onBack} className="rounded-xl text-[#3A3A3A]">
           <ArrowLeft className="w-5 h-5" />
         </Button>
-        <h1 className="text-lg font-semibold text-gray-900">Historial</h1>
-        <span className="ml-auto text-sm text-gray-400">{records.length} registros</span>
+        <h1 className="text-lg font-semibold text-[#3A3A3A]">Historial</h1>
+        <span className="ml-auto text-sm text-[#3A3A3A]/40">{records.length} registros</span>
       </header>
 
       <main className="flex-1 overflow-y-auto pb-6">
         {records.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-20 px-6">
-            <Calendar className="w-12 h-12 text-gray-300 mb-4" />
-            <p className="text-gray-500 font-medium">Sin registros aún</p>
-            <p className="text-sm text-gray-400 mt-1">Tu historial aparecerá aquí</p>
+            <Calendar className="w-12 h-12 text-[#D6D6D6] mb-4" />
+            <p className="text-[#3A3A3A]/60 font-medium">Sin registros aún</p>
+            <p className="text-sm text-[#3A3A3A]/40 mt-1">Tu historial aparecerá aquí</p>
           </div>
         ) : (
           <div className="px-4 py-4 space-y-3">
             {records.map(record => (
               <Card
                 key={record.id}
-                className="rounded-2xl border-0 shadow-sm cursor-pointer hover:shadow-md transition-shadow"
+                className="rounded-2xl border border-[#D6D6D6] bg-white cursor-pointer hover:shadow-md transition-shadow"
                 onClick={() => onViewRecord(record)}
               >
                 <CardContent className="p-4">
                   <div className="flex items-start justify-between">
                     <div>
                       <div className="flex items-center gap-2 mb-1">
-                        <Calendar className="w-4 h-4 text-gray-400" />
-                        <span className="font-semibold text-gray-900">{formatDate(record.date)}</span>
+                        <Calendar className="w-4 h-4 text-[#912D26]" />
+                        <span className="font-semibold text-[#3A3A3A]">{formatDate(record.date)}</span>
                         {record.km && (
-                          <span className="text-xs text-gray-400">• {record.km} km</span>
+                          <span className="text-xs text-[#3A3A3A]/40">• {record.km} km</span>
                         )}
                       </div>
                       <div className="flex items-center gap-4 mt-2 text-sm">
                         <div className="flex items-center gap-1">
-                          <TrendingUp className="w-3.5 h-3.5 text-emerald-500" />
-                          <span className="text-gray-600">S/ {record.production.toFixed(2)}</span>
+                          <TrendingUp className="w-3.5 h-3.5 text-[#3A3A3A]" />
+                          <span className="text-[#3A3A3A]/70">S/ {record.production.toFixed(2)}</span>
                         </div>
                         <div className="flex items-center gap-1">
-                          <TrendingDown className="w-3.5 h-3.5 text-red-400" />
-                          <span className="text-gray-600">S/ {record.totalGastos.toFixed(2)}</span>
+                          <TrendingDown className="w-3.5 h-3.5 text-red-500" />
+                          <span className="text-[#3A3A3A]/70">S/ {record.totalGastos.toFixed(2)}</span>
                         </div>
-                        <span className={`font-bold ${record.entregaAyudante >= 0 ? 'text-emerald-600' : 'text-red-600'}`}>
+                        <span className={`font-bold ${record.entregaAyudante >= 0 ? 'text-[#912D26]' : 'text-red-600'}`}>
                           {record.entregaAyudante >= 0 ? '+' : ''}{record.entregaAyudante.toFixed(2)}
                         </span>
                       </div>
-                      <p className="text-xs text-gray-400 mt-1">
+                      <p className="text-xs text-[#3A3A3A]/40 mt-1">
                         {record.trips.length} frec. {record.conductor ? `• ${record.conductor}` : ''}
                       </p>
                     </div>
                     <div className="flex flex-col items-end gap-2">
-                      <ChevronRight className="w-5 h-5 text-gray-300" />
+                      <ChevronRight className="w-5 h-5 text-[#D6D6D6]" />
                       <Button
                         variant="ghost"
                         size="icon"
-                        className="h-8 w-8 text-gray-400 hover:text-red-500"
+                        className="h-8 w-8 text-[#3A3A3A]/40 hover:text-red-500"
                         onClick={(e) => {
                           e.stopPropagation();
                           setDeleteTarget(record.id);
@@ -158,7 +158,7 @@ export function HistoryScreen({ onBack, onViewRecord }: HistoryScreenProps) {
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel className="rounded-xl">Cancelar</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDelete} className="rounded-xl bg-red-600 hover:bg-red-700">
+            <AlertDialogAction onClick={handleDelete} className="rounded-xl bg-[#912D26] hover:bg-[#7A2520]">
               Eliminar
             </AlertDialogAction>
           </AlertDialogFooter>
