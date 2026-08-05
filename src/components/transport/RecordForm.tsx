@@ -140,7 +140,16 @@ export function RecordForm({ saving, error, onBack, onSave }: RecordFormProps) {
             <CardContent className="p-4 space-y-3">
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1.5">
-                  <Label className="text-xs font-medium text-gray-500">Fecha</Label>
+                  <Label className="text-xs font-medium text-gray-500">Fecha de Registro</Label>
+                  <Input
+                    type="text"
+                    value={new Date().toLocaleDateString('es-EC', { day: '2-digit', month: '2-digit', year: 'numeric' })}
+                    readOnly
+                    className="rounded-xl h-11 bg-gray-100 text-gray-500 cursor-not-allowed"
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <Label className="text-xs font-medium text-gray-500">Fecha de Operacion</Label>
                   <Input
                     type="date"
                     value={form.date}
@@ -148,17 +157,17 @@ export function RecordForm({ saving, error, onBack, onSave }: RecordFormProps) {
                     className="rounded-xl h-11"
                   />
                 </div>
-                <div className="space-y-1.5">
-                  <Label className="text-xs font-medium text-gray-500">Kilometraje</Label>
-                  <Input
-                    type="text"
-                    inputMode="numeric"
-                    placeholder="877604"
-                    value={form.km}
-                    onChange={(e) => updateField('km', e.target.value)}
-                    className="rounded-xl h-11"
-                  />
-                </div>
+              </div>
+              <div className="space-y-1.5">
+                <Label className="text-xs font-medium text-gray-500">Kilometraje</Label>
+                <Input
+                  type="text"
+                  inputMode="numeric"
+                  placeholder="877604"
+                  value={form.km}
+                  onChange={(e) => updateField('km', e.target.value)}
+                  className="rounded-xl h-11"
+                />
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1.5">

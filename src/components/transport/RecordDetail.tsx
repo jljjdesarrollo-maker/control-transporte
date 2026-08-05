@@ -25,12 +25,20 @@ export function RecordDetail({ record, onBack }: RecordDetailProps) {
         </Button>
         <div>
           <h1 className="text-lg font-semibold text-gray-900">Liquidacion del Dia</h1>
-          <p className="text-xs text-gray-400">{formatDate(record.date)}{record.km ? ` • ${record.km} km` : ''}</p>
+          <p className="text-xs text-gray-400">Op: {formatDate(record.date)}{record.km ? ` • ${record.km} km` : ''}</p>
         </div>
       </header>
 
       <main className="flex-1 overflow-y-auto pb-8">
         <div className="px-4 py-4 space-y-4">
+          {/* Fechas */}
+          <Card className="rounded-2xl border-0 shadow-sm">
+            <CardContent className="p-4 grid grid-cols-2 gap-3 text-sm">
+              <div><span className="text-gray-400">Registro:</span> <span className="font-medium">{formatDate(record.createdAt.split('T')[0])}</span></div>
+              <div><span className="text-gray-400">Operacion:</span> <span className="font-medium">{formatDate(record.date)}</span></div>
+            </CardContent>
+          </Card>
+
           {/* Conductor / Ayudante */}
           {(record.conductor || record.ayudanteNombre) && (
             <Card className="rounded-2xl border-0 shadow-sm">
