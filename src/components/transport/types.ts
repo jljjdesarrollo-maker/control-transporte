@@ -64,13 +64,20 @@ export function createEmptyFormData(): RecordFormData {
     km: '',
     conductor: 'Jymmi Vera',
     ayudanteNombre: 'Jorge Cabrera',
-    trips: [],
-    expenses: [
-      { description: 'Chofer', amount: '0' },
-      { description: 'Ayudante', amount: '0' },
-      { description: 'Diesel', amount: '0' },
-      { description: 'Plan Renova', amount: '0' },
+    trips: [
+      { routeFrom: 'Loja', routeTo: 'Vilcabamba', time: '', income: '0', boletos: '0' },   // Frec 1 - impar
+      { routeFrom: 'Vilcabamba', routeTo: 'Loja', time: '', income: '0', boletos: '0' },   // Frec 2 - par
+      { routeFrom: 'Loja', routeTo: 'Vilcabamba', time: '', income: '0', boletos: '0' },   // Frec 3 - impar
+      { routeFrom: 'Vilcabamba', routeTo: 'Loja', time: '', income: '0', boletos: '0' },   // Frec 4 - par
+      { routeFrom: 'Loja', routeTo: 'Vilcabamba', time: '', income: '0', boletos: '0' },   // Frec 5 - impar
+      { routeFrom: 'Vilcabamba', routeTo: 'Loja', time: '', income: '0', boletos: '0' },   // Frec 6 - par
     ],
-    tickets: '0',
+    expenses: [
+      { description: 'Chofer', amount: '30' },
+      { description: 'Ayudante', amount: '20' },
+      { description: 'Diesel', amount: '0' },
+      { description: 'Plan Renova', amount: '68' },
+    ],
+    tickets: '',
   };
 }

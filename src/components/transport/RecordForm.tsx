@@ -346,15 +346,29 @@ export function RecordForm({ saving, error, onBack, onSave }: RecordFormProps) {
           {/* 4. Tickets */}
           <Card className="rounded-2xl border-0 shadow-sm">
             <CardContent className="p-4">
-              <div className="space-y-1.5">
-                <Label className="text-xs font-medium text-gray-500">Tickets</Label>
-                <Input
-                  type="number"
-                  inputMode="decimal"
-                  value={form.tickets}
-                  onChange={(e) => updateField('tickets', e.target.value)}
-                  className="rounded-xl h-11"
-                />
+              <Label className="text-xs font-medium text-gray-500 mb-2 block">Tickets</Label>
+              <div className="grid grid-cols-3 gap-2">
+                <button
+                  type="button"
+                  onClick={() => updateField('tickets', '4.50')}
+                  className={`h-11 rounded-xl text-sm font-semibold border-2 transition-colors ${form.tickets === '4.50' ? 'bg-emerald-600 border-emerald-600 text-white' : 'bg-white border-gray-200 text-gray-700 hover:border-emerald-300'}`}
+                >
+                  $4.50
+                </button>
+                <button
+                  type="button"
+                  onClick={() => updateField('tickets', '6.00')}
+                  className={`h-11 rounded-xl text-sm font-semibold border-2 transition-colors ${form.tickets === '6.00' ? 'bg-emerald-600 border-emerald-600 text-white' : 'bg-white border-gray-200 text-gray-700 hover:border-emerald-300'}`}
+                >
+                  $6.00
+                </button>
+                <button
+                  type="button"
+                  onClick={() => updateField('tickets', '')}
+                  className={`h-11 rounded-xl text-sm font-semibold border-2 transition-colors ${form.tickets === '' ? 'bg-red-500 border-red-500 text-white' : 'bg-white border-gray-200 text-gray-400 hover:border-red-300'}`}
+                >
+                  Ninguno
+                </button>
               </div>
             </CardContent>
           </Card>
