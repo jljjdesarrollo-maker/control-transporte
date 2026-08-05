@@ -27,7 +27,7 @@ export async function generateComprobantePDF(record: SavedRecord): Promise<Blob>
   // Dynamic import to avoid SSR issues
   const { jsPDF } = await import('jspdf');
 
-  const doc = new jsPDF({ unit: 'mm', format: [80, 140] }); // Ticket-style narrow
+  const doc = new jsPDF({ unit: 'mm', format: [80, 170] }); // Ticket-style narrow, taller for 2-line trips
   const w = 80;
   let y = 6;
 
@@ -79,24 +79,26 @@ export async function generateComprobantePDF(record: SavedRecord): Promise<Blob>
   doc.line(4, y, w - 4, y);
   y += 3;
 
-  addText('# Ruta', 4, y, { size: 6, color: COLORS.dark, bold: true });
-  addText('Prod.', w / 2 + 4, y, { size: 6, color: COLORS.dark, bold: true, align: 'center' });
-  addText('Bolet.', w - 8, y, { size: 6, color: COLORS.dark, bold: true, align: 'center' });
-  y += 3;
-
   record.trips.forEach((trip, i) => {
     const odd = (i + 1) % 2 !== 0;
+
+    // Row background for odd trips
     if (odd) {
-      doc.setFillColor(145, 45, 38, 8);
-      doc.rect(3, y - 2, w - 6, 5, 'F');
+      doc.setFillColor(245, 235, 234); // Light red tint for odd rows
+      doc.rect(3, y - 1.5, w - 6, 8, 'F');
     }
 
-    addText(`${i + 1}`, 4, y, { size: 6, color: COLORS.dark, bold: true });
-    const routeLabel = `${trip.routeFrom.substring(0, 4)}-${trip.routeTo.substring(0, 4)}`;
-    addText(routeLabel, 8, y, { size: 6, color: COLORS.dark });
-    addText(`${trip.income.toFixed(0)}`, w / 2 + 4, y, { size: 6, color: COLORS.dark, align: 'center' });
-    addText(`${trip.boletos.toFixed(0)}`, w - 8, y, { size: 6, color: COLORS.dark, align: 'center' });
-    y += 4;
+    // Line 1: Number + Route (right-aligned for odd/visual parity)
+    const badgeX = 4;
+    addText(`${i + 1}`, badgeX, y, { size: 7, color: odd ? COLORS.primary : COLORS.dark, bold: true });
+    const routeLabel = `${trip.routeFrom} - ${trip.routeTo}`;
+    addText(routeLabel, badgeX + 5, y, { size: 7, color: odd ? COLORS.primary : COLORS.dark });
+    y += 3.5;
+
+    // Line 2: Produccion + Boletos (indented)
+    addText(`Prod: S/ ${trip.income.toFixed(2)}`, badgeX + 5, y, { size: 6, color: COLORS.dark });
+    addText(`Bolet: S/ ${trip.boletos.toFixed(2)}`, w - 6, y, { size: 6, color: COLORS.dark, align: 'right' });
+    y += 5;
   });
 
   y += 1;
@@ -138,13 +140,14 @@ export async function generateComprobantePDF(record: SavedRecord): Promise<Blob>
   ];
 
   summaryItems.forEach((item) => {
-    addText(item.label, 4, y, { size: 7, color: [...COLORS.white].map((v, i) => Math.max(v, 120)) as unknown as readonly number[], bold: false });
-    // dimmed white
     doc.setTextColor(200, 200, 200);
     doc.setFontSize(7);
     doc.setFont('helvetica', 'normal');
     doc.text(item.label, 4, y);
-    addText(`S/ ${item.value}`, w - 6, y, { size: 7, color: item.color, bold: true, align: 'right' });
+    doc.setTextColor(...item.color);
+    doc.setFontSize(7);
+    doc.setFont('helvetica', 'bold');
+    doc.text(`S/ ${item.value}`, w - 6, y, { align: 'right' });
     y += 4;
   });
 
