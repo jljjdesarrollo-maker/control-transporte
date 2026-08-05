@@ -5,6 +5,7 @@ import { HomeScreen } from '@/components/transport/HomeScreen';
 import { RecordForm } from '@/components/transport/RecordForm';
 import { HistoryScreen } from '@/components/transport/HistoryScreen';
 import { RecordDetail } from '@/components/transport/RecordDetail';
+import { ComprobanteModal } from '@/components/transport/ComprobanteModal';
 import { type AppView, type RecordFormData, type SavedRecord, num } from '@/components/transport/types';
 import { useToast } from '@/hooks/use-toast';
 
@@ -14,6 +15,7 @@ export default function Home() {
   const [error, setError] = useState<string | null>(null);
   const [recordCount, setRecordCount] = useState(0);
   const [detailRecord, setDetailRecord] = useState<SavedRecord | null>(null);
+  const [comprobanteRecord, setComprobanteRecord] = useState<SavedRecord | null>(null);
   const { toast } = useToast();
 
   const fetchCount = useCallback(async () => {
@@ -59,9 +61,12 @@ export default function Home() {
         throw new Error(result.error || 'Error al guardar');
       }
 
+      const savedRecord = await res.json();
       toast({ title: 'Registro guardado', description: 'Liquidacion registrada correctamente.' });
       fetchCount();
       setView('home');
+      // Show comprobante modal with the saved record
+      setComprobanteRecord(savedRecord);
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'Error al guardar';
       setError(message);
@@ -70,6 +75,16 @@ export default function Home() {
       setSaving(false);
     }
   };
+
+  // Comprobante modal overlay
+  if (comprobanteRecord) {
+    return (
+      <ComprobanteModal
+        record={comprobanteRecord}
+        onClose={() => setComprobanteRecord(null)}
+      />
+    );
+  }
 
   if (detailRecord) {
     return <RecordDetail record={detailRecord} onBack={() => setDetailRecord(null)} />;
