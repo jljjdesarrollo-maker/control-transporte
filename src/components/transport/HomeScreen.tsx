@@ -1,17 +1,17 @@
 'use client';
 
-import { Camera, History, Pencil, Truck } from 'lucide-react';
+import { History, Pencil, Truck } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 
 interface HomeScreenProps {
-  onGoToCapture: () => void;
-  onGoToManual: () => void;
+  onGoToForm: () => void;
   onGoToHistory: () => void;
+  onGoToReports: () => void;
   recordCount: number;
 }
 
-export function HomeScreen({ onGoToCapture, onGoToManual, onGoToHistory, recordCount }: HomeScreenProps) {
+export function HomeScreen({ onGoToForm, onGoToHistory, onGoToReports, recordCount }: HomeScreenProps) {
   return (
     <div className="flex flex-col min-h-[100dvh] bg-gradient-to-b from-emerald-50 to-white">
       {/* Header */}
@@ -25,31 +25,19 @@ export function HomeScreen({ onGoToCapture, onGoToManual, onGoToHistory, recordC
 
       {/* Main Actions */}
       <main className="flex-1 px-5 pb-6 flex flex-col gap-4">
-        {/* Primary: Take Photo */}
+        {/* Primary: Manual */}
         <Button
-          onClick={onGoToCapture}
+          onClick={onGoToForm}
           className="w-full h-20 text-lg font-semibold rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white shadow-lg shadow-emerald-200 active:scale-[0.98] transition-transform"
         >
-          <Camera className="w-6 h-6 mr-3" />
-          Tomar Foto del Cuaderno
-        </Button>
-
-        <p className="text-center text-xs text-gray-400 -mt-2">La IA leerá los datos automáticamente</p>
-
-        {/* Secondary: Manual */}
-        <Button
-          onClick={onGoToManual}
-          variant="outline"
-          className="w-full h-14 text-base rounded-2xl border-2 border-gray-200 hover:border-emerald-300 hover:bg-emerald-50 text-gray-700"
-        >
-          <Pencil className="w-5 h-5 mr-2" />
-          Llenar Manualmente
+          <Pencil className="w-6 h-6 mr-3" />
+          Nuevo Registro
         </Button>
 
         {/* History Card */}
         <Card
           onClick={onGoToHistory}
-          className="mt-4 cursor-pointer hover:shadow-md transition-shadow rounded-2xl border-0 bg-white shadow-sm"
+          className="mt-2 cursor-pointer hover:shadow-md transition-shadow rounded-2xl border-0 bg-white shadow-sm"
         >
           <CardContent className="flex items-center justify-between p-4">
             <div className="flex items-center gap-3">

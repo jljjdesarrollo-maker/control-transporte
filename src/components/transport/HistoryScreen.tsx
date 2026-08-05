@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { ArrowLeft, Trash2, ChevronRight, Calendar, TrendingUp, TrendingDown, Minus, Loader2 } from 'lucide-react';
+import { ArrowLeft, Trash2, ChevronRight, Calendar, TrendingUp, TrendingDown, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { type SavedRecord } from './types';
@@ -112,17 +112,19 @@ export function HistoryScreen({ onBack, onViewRecord }: HistoryScreenProps) {
                       <div className="flex items-center gap-4 mt-2 text-sm">
                         <div className="flex items-center gap-1">
                           <TrendingUp className="w-3.5 h-3.5 text-emerald-500" />
-                          <span className="text-gray-600">S/ {record.totalIngresos.toFixed(2)}</span>
+                          <span className="text-gray-600">S/ {record.production.toFixed(2)}</span>
                         </div>
                         <div className="flex items-center gap-1">
                           <TrendingDown className="w-3.5 h-3.5 text-red-400" />
                           <span className="text-gray-600">S/ {record.totalGastos.toFixed(2)}</span>
                         </div>
-                        <span className={`font-bold ${record.balance >= 0 ? 'text-emerald-600' : 'text-red-600'}`}>
-                          {record.balance >= 0 ? '+' : ''}{record.balance.toFixed(2)}
+                        <span className={`font-bold ${record.entregaAyudante >= 0 ? 'text-emerald-600' : 'text-red-600'}`}>
+                          {record.entregaAyudante >= 0 ? '+' : ''}{record.entregaAyudante.toFixed(2)}
                         </span>
                       </div>
-                      <p className="text-xs text-gray-400 mt-1">{record.trips.length} viajes</p>
+                      <p className="text-xs text-gray-400 mt-1">
+                        {record.trips.length} frec. {record.conductor ? `• ${record.conductor}` : ''}
+                      </p>
                     </div>
                     <div className="flex flex-col items-end gap-2">
                       <ChevronRight className="w-5 h-5 text-gray-300" />
