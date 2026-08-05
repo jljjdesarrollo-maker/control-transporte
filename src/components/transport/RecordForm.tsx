@@ -1,12 +1,22 @@
 'use client';
 
 import { useState, useMemo, useRef } from 'react';
-import { ArrowLeft, Save, Plus, Trash2, Camera, X, Loader2 } from 'lucide-react';
+import { ArrowLeft, Save, Plus, Trash2, Camera, X, Loader2, AlertTriangle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
+import {
+  AlertDialog,
+  AlertDialogContent,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogCancel,
+  AlertDialogAction,
+} from '@/components/ui/alert-dialog';
 import { type RecordFormData, type TripData, type ExpenseData, createEmptyFormData, num } from './types';
 import { routes, getRouteLabel, getTimesForRoute } from '@/lib/routes';
 
@@ -20,6 +30,8 @@ interface RecordFormProps {
 export function RecordForm({ saving, error, onBack, onSave }: RecordFormProps) {
   const [form, setForm] = useState<RecordFormData>(createEmptyFormData());
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
+  const [validationErrors, setValidationErrors] = useState<string[]>([]);
+  const [showConfirm, setShowConfirm] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const updateField = (field: keyof RecordFormData, value: string) => {
@@ -101,6 +113,22 @@ export function RecordForm({ saving, error, onBack, onSave }: RecordFormProps) {
   }, [form]);
 
   const handleSave = () => {
+    // Validaciones obligatorias
+    const errors: string[] = [];
+    if (!form.km.trim()) errors.push('Kilometraje es obligatorio');
+    if (!photoPreview) errors.push('Foto del cuaderno es obligatoria');
+    if (totals.totalGastos <= 0) errors.push('Total de gastos debe ser mayor a 0');
+    if (totals.production <= 0) errors.push('Produccion total debe ser mayor a 0');
+    if (errors.length > 0) {
+      setValidationErrors(errors);
+      return;
+    }
+    setValidationErrors([]);
+    setShowConfirm(true);
+  };
+
+  const handleConfirmSave = () => {
+    setShowConfirm(false);
     onSave(form, photoPreview);
   };
 
@@ -136,6 +164,12 @@ export function RecordForm({ saving, error, onBack, onSave }: RecordFormProps) {
               {error}
             </div>
           )}
+          {validationErrors.length > 0 && (
+            <div className="p-3 rounded-xl bg-[#912D26]/10 border border-[#912D26]/30 text-[#912D26] text-sm space-y-1">
+              <p className="font-semibold flex items-center gap-1.5"><AlertTriangle className="w-4 h-4" /> Campos obligatorios:</p>
+              {validationErrors.map((e, i) => <p key={i}>- {e}</p>)}
+            </div>
+          )}
 
           {/* 1. Cabecera - Fechas y Km */}
           <Card className="rounded-2xl border border-[#D6D6D6] bg-white">
@@ -161,14 +195,16 @@ export function RecordForm({ saving, error, onBack, onSave }: RecordFormProps) {
                 </div>
               </div>
               <div className="space-y-1.5">
-                <Label className="text-xs font-medium text-[#3A3A3A]/60">Kilometraje</Label>
+                <Label className="text-xs font-medium text-[#3A3A3A]/60 flex items-center gap-1">
+                  Kilometraje <span className="text-[#912D26]">*</span>
+                </Label>
                 <Input
                   type="text"
                   inputMode="numeric"
                   placeholder="877604"
                   value={form.km}
                   onChange={(e) => updateField('km', e.target.value)}
-                  className="rounded-xl h-11 border-[#D6D6D6]"
+                  className={`rounded-xl h-11 border-[#D6D6D6] ${!form.km.trim() && validationErrors.length > 0 ? 'border-[#912D26] bg-[#912D26]/5' : ''}`}
                 />
               </div>
               <div className="grid grid-cols-2 gap-3">
@@ -192,9 +228,11 @@ export function RecordForm({ saving, error, onBack, onSave }: RecordFormProps) {
                 </div>
               </div>
 
-              {/* Foto opcional */}
+              {/* Foto obligatoria */}
               <div>
-                <Label className="text-xs font-medium text-[#3A3A3A]/60">Foto del Cuaderno (Opcional)</Label>
+                <Label className="text-xs font-medium text-[#3A3A3A]/60 flex items-center gap-1">
+                  Foto del Cuaderno <span className="text-[#912D26]">*</span>
+                </Label>
                 <div className="mt-1.5">
                   {photoPreview ? (
                     <div className="relative w-20 h-20 rounded-xl overflow-hidden border-2 border-[#912D26]">
@@ -437,6 +475,44 @@ export function RecordForm({ saving, error, onBack, onSave }: RecordFormProps) {
           </Button>
         </div>
       </main>
+
+      {/* Dialogo de confirmacion antes de guardar */}
+      <AlertDialog open={showConfirm} onOpenChange={setShowConfirm}>
+        <AlertDialogContent className="rounded-2xl max-w-md">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-[#3A3A3A] text-lg">Confirmar Cierre de Caja</AlertDialogTitle>
+            <AlertDialogDescription className="text-[#3A3A3A]/70 text-sm space-y-3 pt-2">
+              <p>Revise los valores calculados antes de confirmar:</p>
+              <div className="rounded-xl bg-[#F5F5F5] p-3 space-y-2">
+                <div className="flex justify-between text-sm">
+                  <span className="text-[#3A3A3A]/60">Produccion</span>
+                  <span className="font-semibold text-[#3A3A3A]">S/ {totals.production.toFixed(2)}</span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span className="text-[#3A3A3A]/60">Caja Comun</span>
+                  <span className="font-semibold text-[#3A3A3A]">S/ {totals.cajaComun.toFixed(2)}</span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span className="text-[#3A3A3A]/60">Total Gastos</span>
+                  <span className="font-semibold text-red-600">S/ {totals.totalGastos.toFixed(2)}</span>
+                </div>
+              </div>
+              <p className="font-medium text-[#912D26]">
+                Va a entregar la Compania por caja comun <strong>S/ {totals.cajaComun.toFixed(2)}</strong> y valor a entregar el ayudante <strong>S/ {totals.entregaAyudante.toFixed(2)}</strong>. Es correcto?
+              </p>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter className="gap-2">
+            <AlertDialogCancel className="rounded-xl h-11">Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleConfirmSave}
+              className="rounded-xl h-11 bg-[#912D26] hover:bg-[#7A2520] text-white font-semibold"
+            >
+              Confirmar y Guardar
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       <input
         ref={fileInputRef}

@@ -95,9 +95,9 @@ export async function generateComprobantePDF(record: SavedRecord): Promise<Blob>
     addText(routeLabel, badgeX + 5, y, { size: 7, color: odd ? COLORS.primary : COLORS.dark });
     y += 3.5;
 
-    // Line 2: Produccion + Boletos (indented)
+    // Line 2: Produccion + Caja Comun (indented)
     addText(`Prod: S/ ${trip.income.toFixed(2)}`, badgeX + 5, y, { size: 6, color: COLORS.dark });
-    addText(`Bolet: S/ ${trip.boletos.toFixed(2)}`, w - 6, y, { size: 6, color: COLORS.dark, align: 'right' });
+    addText(`Caja Com.: S/ ${trip.boletos.toFixed(2)}`, w - 6, y, { size: 6, color: COLORS.dark, align: 'right' });
     y += 5;
   });
 
