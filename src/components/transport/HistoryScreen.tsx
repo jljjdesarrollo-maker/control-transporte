@@ -1,9 +1,10 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { ArrowLeft, Trash2, ChevronRight, Calendar, TrendingUp, TrendingDown, Loader2 } from 'lucide-react';
+import { useState, useEffect, useMemo } from 'react';
+import { ArrowLeft, Trash2, ChevronRight, Calendar, TrendingUp, TrendingDown, Loader2, Download } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
 import { type SavedRecord } from './types';
 import {
   AlertDialog,
@@ -16,21 +17,61 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 
+type FilterType = 'todos' | 'hoy' | 'semana' | 'mes';
+
 interface HistoryScreenProps {
+  isAdmin: boolean;
   onBack: () => void;
   onViewRecord: (record: SavedRecord) => void;
 }
 
-export function HistoryScreen({ onBack, onViewRecord }: HistoryScreenProps) {
-  const [records, setRecords] = useState<SavedRecord[]>([]);
+function getDateRange(filter: FilterType, monthValue?: string): { from: string; to: string } {
+  const today = new Date();
+  const yyyy = today.getFullYear();
+  const mm = String(today.getMonth() + 1).padStart(2, '0');
+  const dd = String(today.getDate()).padStart(2, '0');
+  const todayStr = `${yyyy}-${mm}-${dd}`;
+
+  switch (filter) {
+    case 'hoy':
+      return { from: todayStr, to: todayStr };
+    case 'semana': {
+      const weekAgo = new Date(today);
+      weekAgo.setDate(weekAgo.getDate() - 6);
+      const wy = weekAgo.getFullYear();
+      const wm = String(weekAgo.getMonth() + 1).padStart(2, '0');
+      const wd = String(weekAgo.getDate()).padStart(2, '0');
+      return { from: `${wy}-${wm}-${wd}`, to: todayStr };
+    }
+    case 'mes': {
+      if (monthValue) {
+        const [m, y] = monthValue.split('-');
+        const daysInMonth = new Date(parseInt(y), parseInt(m), 0).getDate();
+        return {
+          from: `${y}-${m}-01`,
+          to: `${y}-${m}-${String(daysInMonth).padStart(2, '0')}`,
+        };
+      }
+      return { from: `${yyyy}-${mm}-01`, to: todayStr };
+    }
+    default:
+      return { from: '', to: '' };
+  }
+}
+
+export function HistoryScreen({ isAdmin, onBack, onViewRecord }: HistoryScreenProps) {
+  const [allRecords, setAllRecords] = useState<SavedRecord[]>([]);
   const [loading, setLoading] = useState(true);
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
+  const [filter, setFilter] = useState<FilterType>('todos');
+  const [monthValue, setMonthValue] = useState<string>('');
+  const [exporting, setExporting] = useState(false);
 
   const fetchRecords = async () => {
     try {
       const res = await fetch('/api/records');
       const data = await res.json();
-      setRecords(data);
+      setAllRecords(Array.isArray(data) ? data : []);
     } catch {
       console.error('Error loading records');
     } finally {
@@ -38,25 +79,68 @@ export function HistoryScreen({ onBack, onViewRecord }: HistoryScreenProps) {
     }
   };
 
-  useEffect(() => {
-    fetchRecords();
-  }, []);
+  useEffect(() => { fetchRecords(); }, []);
+
+  const dateRange = useMemo(() => getDateRange(filter, monthValue), [filter, monthValue]);
+
+  const filteredRecords = useMemo(() => {
+    if (filter === 'todos' && !monthValue) return allRecords;
+    return allRecords.filter(r => {
+      if (dateRange.from && r.date < dateRange.from) return false;
+      if (dateRange.to && r.date > dateRange.to) return false;
+      return true;
+    });
+  }, [allRecords, dateRange, filter, monthValue]);
 
   const handleDelete = async () => {
     if (!deleteTarget) return;
     try {
       await fetch(`/api/records/${deleteTarget}`, { method: 'DELETE' });
-      setRecords(prev => prev.filter(r => r.id !== deleteTarget));
+      setAllRecords(prev => prev.filter(r => r.id !== deleteTarget));
     } catch {
       console.error('Error deleting record');
     }
     setDeleteTarget(null);
   };
 
+  const handleExportXLS = async () => {
+    setExporting(true);
+    try {
+      const { generateXLS } = await import('@/lib/generate-xls');
+      let filename = 'liquidacion';
+      if (filter === 'hoy') filename += '_hoy';
+      else if (filter === 'semana') filename += '_semana';
+      else if (filter === 'mes') {
+        const monthNames = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'];
+        if (monthValue) {
+          const [m, y] = monthValue.split('-');
+          filename += `_${monthNames[parseInt(m) - 1]}_${y}`;
+        } else {
+          const today = new Date();
+          filename += `_${monthNames[today.getMonth()]}_${today.getFullYear()}`;
+        }
+      } else {
+        filename += '_todos';
+      }
+      await generateXLS(filteredRecords, filename);
+    } catch (err) {
+      console.error('Error exporting XLS:', err);
+    } finally {
+      setExporting(false);
+    }
+  };
+
   const formatDate = (dateStr: string) => {
     const [y, m, d] = dateStr.split('-');
     return `${d}/${m}/${y}`;
   };
+
+  const filterButtons: { key: FilterType; label: string }[] = [
+    { key: 'todos', label: 'Todos' },
+    { key: 'hoy', label: 'Hoy' },
+    { key: 'semana', label: 'Semana' },
+    { key: 'mes', label: 'Mes' },
+  ];
 
   if (loading) {
     return (
@@ -65,7 +149,7 @@ export function HistoryScreen({ onBack, onViewRecord }: HistoryScreenProps) {
           <Button variant="ghost" size="icon" onClick={onBack} className="rounded-xl text-[#3A3A3A]">
             <ArrowLeft className="w-5 h-5" />
           </Button>
-          <h1 className="text-lg font-semibold text-[#3A3A3A]">Historial</h1>
+          <h1 className="text-lg font-semibold text-[#3A3A3A]">{isAdmin ? 'Historial Completo' : 'Mi Historial'}</h1>
         </header>
         <main className="flex-1 flex items-center justify-center">
           <Loader2 className="w-8 h-8 text-[#912D26] animate-spin" />
@@ -80,20 +164,70 @@ export function HistoryScreen({ onBack, onViewRecord }: HistoryScreenProps) {
         <Button variant="ghost" size="icon" onClick={onBack} className="rounded-xl text-[#3A3A3A]">
           <ArrowLeft className="w-5 h-5" />
         </Button>
-        <h1 className="text-lg font-semibold text-[#3A3A3A]">Historial</h1>
-        <span className="ml-auto text-sm text-[#3A3A3A]/40">{records.length} registros</span>
+        <h1 className="text-lg font-semibold text-[#3A3A3A]">{isAdmin ? 'Historial Completo' : 'Mi Historial'}</h1>
       </header>
 
       <main className="flex-1 overflow-y-auto pb-6">
-        {records.length === 0 ? (
+        {/* Filter bar */}
+        <div className="px-4 pt-4 pb-2 space-y-3">
+          <div className="flex gap-2">
+            {filterButtons.map(fb => (
+              <button
+                key={fb.key}
+                onClick={() => { setFilter(fb.key); if (fb.key !== 'mes') setMonthValue(''); }}
+                className={`flex-1 h-9 rounded-xl text-xs font-semibold transition-all active:scale-95 ${
+                  filter === fb.key
+                    ? 'bg-[#912D26] text-white shadow-sm'
+                    : 'bg-[#F5F5F5] text-[#3A3A3A]/60 hover:bg-[#E8E8E8]'
+                }`}
+              >
+                {fb.label}
+              </button>
+            ))}
+          </div>
+
+          {/* Month picker (only when "Mes" selected) */}
+          {filter === 'mes' && (
+            <div className="flex items-center gap-2">
+              <Input
+                type="month"
+                value={monthValue}
+                onChange={e => setMonthValue(e.target.value)}
+                className="flex-1 h-10 rounded-xl border-[#D6D6D6] text-sm"
+              />
+            </div>
+          )}
+
+          {/* Results count + Export button */}
+          <div className="flex items-center justify-between">
+            <p className="text-xs text-[#3A3A3A]/50">
+              {filteredRecords.length} registro{filteredRecords.length !== 1 ? 's' : ''}
+              {filter !== 'todos' && dateRange.from ? ` (${formatDate(dateRange.from)} al ${formatDate(dateRange.to)})` : ''}
+            </p>
+            {isAdmin && filteredRecords.length > 0 && (
+              <Button
+                onClick={handleExportXLS}
+                disabled={exporting}
+                size="sm"
+                className="h-8 rounded-lg text-xs bg-[#3A3A3A] hover:bg-[#2A2A2A] text-white"
+              >
+                {exporting ? <Loader2 className="w-3.5 h-3.5 animate-spin mr-1" /> : <Download className="w-3.5 h-3.5 mr-1" />}
+                {exporting ? 'Exportando...' : 'Exportar XLS'}
+              </Button>
+            )}
+          </div>
+        </div>
+
+        {/* Records list */}
+        {filteredRecords.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-20 px-6">
             <Calendar className="w-12 h-12 text-[#D6D6D6] mb-4" />
-            <p className="text-[#3A3A3A]/60 font-medium">Sin registros aún</p>
-            <p className="text-sm text-[#3A3A3A]/40 mt-1">Tu historial aparecerá aquí</p>
+            <p className="text-[#3A3A3A]/60 font-medium">Sin registros en este periodo</p>
+            <p className="text-sm text-[#3A3A3A]/40 mt-1">Prueba con otro filtro</p>
           </div>
         ) : (
-          <div className="px-4 py-4 space-y-3">
-            {records.map(record => (
+          <div className="px-4 py-2 space-y-3">
+            {filteredRecords.map(record => (
               <Card
                 key={record.id}
                 className="rounded-2xl border border-[#D6D6D6] bg-white cursor-pointer hover:shadow-md transition-shadow"
@@ -153,7 +287,7 @@ export function HistoryScreen({ onBack, onViewRecord }: HistoryScreenProps) {
           <AlertDialogHeader>
             <AlertDialogTitle>¿Eliminar registro?</AlertDialogTitle>
             <AlertDialogDescription>
-              Esta acción no se puede deshacer. El registro se eliminará permanentemente.
+              Esta accion no se puede deshacer. El registro se eliminara permanentemente.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

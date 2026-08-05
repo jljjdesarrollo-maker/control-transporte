@@ -156,6 +156,7 @@ export default function Home() {
     case 'history':
       return (
         <HistoryScreen
+          isAdmin={isAdmin}
           onBack={() => setView('home')}
           onViewRecord={(record) => setDetailRecord(record)}
         />
