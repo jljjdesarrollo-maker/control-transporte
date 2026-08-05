@@ -52,10 +52,30 @@ export interface SavedRecord {
   }[];
 }
 
-export type AppView = 'home' | 'form' | 'history' | 'reports';
+export interface UserSession {
+  id: string;
+  nombre: string;
+  rol: string;
+}
+
+export type AppView = 'home' | 'form' | 'history' | 'reports' | 'personal';
 
 export function num(v: string): number {
   return parseFloat(v) || 0;
+}
+
+export function getCurrentConductor(): Promise<string | null> {
+  return fetch('/api/personas').then(r => r.json()).then((list: Array<{ esActual: boolean; rol: string; nombre: string }>) => {
+    const c = list.find(p => p.rol === 'CONDUCTOR' && p.esActual);
+    return c ? c.nombre : null;
+  }).catch(() => null);
+}
+
+export function getCurrentAyudante(): Promise<string | null> {
+  return fetch('/api/personas').then(r => r.json()).then((list: Array<{ esActual: boolean; rol: string; nombre: string }>) => {
+    const a = list.find(p => p.rol === 'AYUDANTE' && p.esActual);
+    return a ? a.nombre : null;
+  }).catch(() => null);
 }
 
 export function createEmptyFormData(): RecordFormData {

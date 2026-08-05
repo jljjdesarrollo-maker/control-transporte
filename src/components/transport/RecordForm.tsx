@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo, useRef } from 'react';
+import { useState, useMemo, useRef, useEffect } from 'react';
 import { ArrowLeft, Save, Plus, Trash2, Camera, X, Loader2, AlertTriangle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -17,7 +17,7 @@ import {
   AlertDialogCancel,
   AlertDialogAction,
 } from '@/components/ui/alert-dialog';
-import { type RecordFormData, type TripData, type ExpenseData, createEmptyFormData, num } from './types';
+import { type RecordFormData, type TripData, type ExpenseData, createEmptyFormData, num, getCurrentConductor, getCurrentAyudante } from './types';
 import { routes, getRouteLabel, getTimesForRoute } from '@/lib/routes';
 
 interface RecordFormProps {
@@ -32,6 +32,22 @@ export function RecordForm({ saving, error, onBack, onSave }: RecordFormProps) {
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
   const [validationErrors, setValidationErrors] = useState<string[]>([]);
   const [showConfirm, setShowConfirm] = useState(false);
+  const [loadedDefaults, setLoadedDefaults] = useState(false);
+
+  // Load current conductor and ayudante from DB
+  useEffect(() => {
+    if (loadedDefaults) return;
+    Promise.all([getCurrentConductor(), getCurrentAyudante()]).then(([conductor, ayudante]) => {
+      if (conductor || ayudante) {
+        setForm(prev => ({
+          ...prev,
+          ...(conductor ? { conductor } : {}),
+          ...(ayudante ? { ayudanteNombre: ayudante } : {}),
+        }));
+      }
+      setLoadedDefaults(true);
+    });
+  }, [loadedDefaults]);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const updateField = (field: keyof RecordFormData, value: string) => {
