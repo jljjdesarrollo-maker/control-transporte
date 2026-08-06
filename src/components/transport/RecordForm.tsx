@@ -33,18 +33,21 @@ export function RecordForm({ saving, error, onBack, onSave }: RecordFormProps) {
   const [validationErrors, setValidationErrors] = useState<string[]>([]);
   const [showConfirm, setShowConfirm] = useState(false);
   const [loadedDefaults, setLoadedDefaults] = useState(false);
+  const [busVTs, setBusVTs] = useState<Array<{ code: string; busNumber: string; frecuencias: Array<{ routeFrom: string; routeTo: string; time: string }> }>>([]);
 
-  // Load current conductor and ayudante from DB
+  // Load current conductor, ayudante and VTs from DB
   useEffect(() => {
     if (loadedDefaults) return;
-    Promise.all([getCurrentConductor(), getCurrentAyudante()]).then(([conductor, ayudante]) => {
-      if (conductor || ayudante) {
-        setForm(prev => ({
-          ...prev,
-          ...(conductor ? { conductor } : {}),
-          ...(ayudante ? { ayudanteNombre: ayudante } : {}),
-        }));
-      }
+    Promise.all([
+      getCurrentConductor(),
+      getCurrentAyudante(),
+      fetch('/api/bus-vts').then(r => r.json()).catch(() => []),
+    ]).then(([conductor, ayudante, vts]) => {
+      const updates: Partial<RecordFormData> = {};
+      if (conductor) updates.conductor = conductor;
+      if (ayudante) updates.ayudanteNombre = ayudante;
+      setForm(prev => ({ ...prev, ...updates }));
+      if (Array.isArray(vts)) setBusVTs(vts);
       setLoadedDefaults(true);
     });
   }, [loadedDefaults]);
@@ -52,6 +55,37 @@ export function RecordForm({ saving, error, onBack, onSave }: RecordFormProps) {
 
   const updateField = (field: keyof RecordFormData, value: string) => {
     setForm((prev) => ({ ...prev, [field]: value }));
+  };
+
+  // Handle VT selection: load frequencies for selected VT
+  const handleVTSelect = (code: string) => {
+    if (code === '') {
+      // Deselect: reset to default 6 trips
+      setForm(prev => ({
+        ...prev,
+        vtCode: '',
+        trips: [
+          { routeFrom: 'Loja', routeTo: 'Vilcabamba', time: '', income: '0', boletos: '0' },
+          { routeFrom: 'Vilcabamba', routeTo: 'Loja', time: '', income: '0', boletos: '0' },
+          { routeFrom: 'Loja', routeTo: 'Vilcabamba', time: '', income: '0', boletos: '0' },
+          { routeFrom: 'Vilcabamba', routeTo: 'Loja', time: '', income: '0', boletos: '0' },
+          { routeFrom: 'Loja', routeTo: 'Vilcabamba', time: '', income: '0', boletos: '0' },
+          { routeFrom: 'Vilcabamba', routeTo: 'Loja', time: '', income: '0', boletos: '0' },
+        ],
+      }));
+      return;
+    }
+    const vt = busVTs.find(v => v.code === code);
+    if (vt && Array.isArray(vt.frecuencias)) {
+ const trips = vt.frecuencias.map((f: { routeFrom: string; routeTo: string; time: string }) => ({
+        routeFrom: f.routeFrom,
+        routeTo: f.routeTo,
+        time: f.time,
+        income: '0',
+        boletos: '0',
+      }));
+      setForm(prev => ({ ...prev, vtCode: code, trips }));
+    }
   };
 
   const addTrip = () => {
@@ -187,6 +221,45 @@ export function RecordForm({ saving, error, onBack, onSave }: RecordFormProps) {
               <p className="font-semibold flex items-center gap-1.5"><AlertTriangle className="w-4 h-4" /> Campos obligatorios:</p>
               {validationErrors.map((e, i) => <p key={i}>- {e}</p>)}
             </div>
+          )}
+
+          {/* 0. VT Selector */}
+          {busVTs.length > 0 && (
+            <Card className="rounded-2xl border border-[#D6D6D6] bg-white">
+              <CardContent className="p-4 space-y-2">
+                <div className="flex items-center justify-between">
+                  <p className="text-xs font-bold text-[#3A3A3A]/40 uppercase tracking-wider">Unidad (VT)</p>
+                  {form.vtCode && (
+                    <button
+                      onClick={() => handleVTSelect('')}
+                      className="text-[10px] text-[#912D26] font-medium"
+                    >
+                      Limpiar seleccion
+                    </button>
+                  )}
+                </div>
+                <div className="grid grid-cols-5 gap-1.5">
+                  {busVTs.map(vt => (
+                    <button
+                      key={vt.code}
+                      onClick={() => handleVTSelect(vt.code)}
+                      className={`h-10 rounded-xl text-xs font-bold border-2 transition-all active:scale-95 ${
+                        form.vtCode === vt.code
+                          ? 'bg-[#912D26] border-[#912D26] text-white shadow-lg shadow-[#912D26]/20'
+                          : 'bg-white border-[#D6D6D6] text-[#3A3A3A]/60 hover:border-[#912D26]'
+                      }`}
+                    >
+                      {vt.code.replace('VT', '')}
+                    </button>
+                  ))}
+                </div>
+                {form.vtCode && (
+                  <p className="text-[10px] text-[#912D26]/60">
+                    {busVTs.find(v => v.code === form.vtCode)?.busNumber || ''} — {form.trips.length} frecuencias cargadas
+                  </p>
+                )}
+              </CardContent>
+            </Card>
           )}
 
           {/* 1. Cabecera - Fechas y Km */}

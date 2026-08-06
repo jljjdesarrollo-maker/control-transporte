@@ -30,7 +30,7 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { date, km, conductor, ayudanteNombre, trips, expenses, tickets, sobrante, photoUrl } = body;
+    const { date, km, conductor, ayudanteNombre, vtCode, trips, expenses, tickets, sobrante, photoUrl } = body;
 
     const tripIncome = (trips || []).reduce((s: number, t: { income: number | string }) => s + (Number(t.income) || 0), 0);
     const cajaComun = (trips || []).reduce((s: number, t: { boletos: number | string }) => s + (Number(t.boletos) || 0), 0);
@@ -47,6 +47,7 @@ export async function POST(req: NextRequest) {
         km: km || null,
         conductor: conductor || null,
         ayudanteNombre: ayudanteNombre || null,
+        vtCode: vtCode || null,
         production,
         cajaComun,
         sobrante: sobranteNum,

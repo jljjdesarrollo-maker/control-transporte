@@ -13,6 +13,7 @@ model DailyRecord {
   km             String?
   conductor      String?
   ayudanteNombre String?
+  vtCode         String?
   production     Float    @default(0)
   cajaComun      Float    @default(0)
   sobrante       Float    @default(0)
@@ -49,6 +50,15 @@ model Expense {
   amount      Float   @default(0)
 
   record DailyRecord @relation(fields: [recordId], references: [id], onDelete: Cascade)
+}
+
+model BusVT {
+  id          String   @id @default(cuid())
+  code        String   @unique
+  busNumber   String
+  frecuencias Json     @default("[]")
+  order       Int      @default(0)
+  updatedAt   DateTime @updatedAt
 }
 
 model Persona {

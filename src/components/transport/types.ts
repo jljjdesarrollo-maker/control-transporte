@@ -16,6 +16,7 @@ export interface RecordFormData {
   km: string;
   conductor: string;
   ayudanteNombre: string;
+  vtCode: string;
   trips: TripData[];
   expenses: ExpenseData[];
   tickets: string;
@@ -86,6 +87,7 @@ export function createEmptyFormData(): RecordFormData {
     km: '',
     conductor: 'Jymmi Vera',
     ayudanteNombre: 'Jorge Cabrera',
+    vtCode: '',
     trips: [
       { routeFrom: 'Loja', routeTo: 'Vilcabamba', time: '', income: '0', boletos: '0' },   // Frec 1 - impar
       { routeFrom: 'Vilcabamba', routeTo: 'Loja', time: '', income: '0', boletos: '0' },   // Frec 2 - par
