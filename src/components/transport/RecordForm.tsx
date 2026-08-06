@@ -33,6 +33,20 @@ export function RecordForm({ saving, error, onBack, onSave }: RecordFormProps) {
   const [validationErrors, setValidationErrors] = useState<string[]>([]);
   const [showConfirm, setShowConfirm] = useState(false);
   const [loadedDefaults, setLoadedDefaults] = useState(false);
+  const [vts, setVts] = useState<Array<{id: string; codigo: string; nombre: string; frecuencias: any[]}>>([]);
+  const [selectedVtId, setSelectedVtId] = useState('');
+  const [vtsLoaded, setVtsLoaded] = useState(false);
+
+  // Load VTs from API
+  useEffect(() => {
+    if (vtsLoaded) return;
+    fetch('/api/bus-vts').then(r => r.json()).then(data => {
+      if (Array.isArray(data)) {
+        setVts(data);
+      }
+      setVtsLoaded(true);
+    }).catch(() => setVtsLoaded(true));
+  }, [vtsLoaded]);
 
   // Load current conductor and ayudante from DB
   useEffect(() => {
@@ -49,6 +63,24 @@ export function RecordForm({ saving, error, onBack, onSave }: RecordFormProps) {
     });
   }, [loadedDefaults]);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Handle VT selection - load frequencies into form
+  const handleVtSelect = (vtId: string) => {
+    setSelectedVtId(vtId);
+    const vt = vts.find(v => v.id === vtId);
+    if (vt && Array.isArray(vt.frecuencias)) {
+      const newTrips = vt.frecuencias.map((f: any) => ({
+        routeFrom: f.routeFrom || 'Loja',
+        routeTo: f.routeTo || 'Vilcabamba',
+        time: f.time || '',
+        income: '0',
+        boletos: '0',
+      }));
+      setForm(prev => ({ ...prev, vtCode: vt.codigo, trips: newTrips }));
+    } else {
+      setForm(prev => ({ ...prev, vtCode: '', trips: [] }));
+    }
+  };
 
   const updateField = (field: keyof RecordFormData, value: string) => {
     setForm((prev) => ({ ...prev, [field]: value }));
@@ -133,8 +165,10 @@ export function RecordForm({ saving, error, onBack, onSave }: RecordFormProps) {
   const handleSave = () => {
     // Validaciones obligatorias
     const errors: string[] = [];
+    if (!form.vtCode.trim()) errors.push('Selecciona un Vehiculo Tipo (VT)');
     if (!form.km.trim()) errors.push('Kilometraje es obligatorio');
     if (!photoPreview) errors.push('Foto del cuaderno es obligatoria');
+    if (form.trips.length === 0) errors.push('No hay frecuencias cargadas');
     if (totals.totalGastos <= 0) errors.push('Total de gastos debe ser mayor a 0');
     if (totals.production <= 0) errors.push('Produccion total debe ser mayor a 0');
     if (errors.length > 0) {
@@ -188,6 +222,40 @@ export function RecordForm({ saving, error, onBack, onSave }: RecordFormProps) {
               {validationErrors.map((e, i) => <p key={i}>- {e}</p>)}
             </div>
           )}
+
+          {/* 0. Seleccion VT */}
+          <Card className="rounded-2xl border-2 border-[#912D26]/30 bg-[#912D26]/5">
+            <CardContent className="p-4 space-y-2">
+              <Label className="text-sm font-semibold text-[#3A3A3A] flex items-center gap-1.5">
+                Vehiculo Tipo (VT) del dia <span className="text-[#912D26]">*</span>
+              </Label>
+              {vts.length > 0 ? (
+                <div className="grid grid-cols-3 gap-2 mt-2">
+                  {vts.map(vt => (
+                    <button
+                      key={vt.id}
+                      type="button"
+                      onClick={() => handleVtSelect(vt.id)}
+                      className={`py-2.5 px-2 rounded-xl text-sm font-semibold transition-all border ${
+                        selectedVtId === vt.id
+                          ? 'bg-[#912D26] text-white border-[#912D26] shadow-md'
+                          : 'bg-white text-[#3A3A3A] border-[#D6D6D6] hover:border-[#912D26]/40'
+                      }`}
+                    >
+                      {vt.codigo}
+                    </button>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-sm text-[#3A3A3A]/50 mt-1">Cargando VTs...</p>
+              )}
+              {selectedVtId && (
+                <p className="text-xs text-[#912D26]/70 mt-1">
+                  {form.trips.length} frecuencias cargadas - puedes editarlas abajo
+                </p>
+              )}
+            </CardContent>
+          </Card>
 
           {/* 1. Cabecera - Fechas y Km */}
           <Card className="rounded-2xl border border-[#D6D6D6] bg-white">

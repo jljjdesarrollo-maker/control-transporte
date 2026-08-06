@@ -7,12 +7,23 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+model BusVT {
+  id          String  @id @default(cuid())
+  codigo      String  @unique
+  nombre      String
+  frecuencias Json    @default("[]")
+  activo      Boolean @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
 model DailyRecord {
   id             String   @id @default(cuid())
   date           String
   km             String?
   conductor      String?
   ayudanteNombre String?
+  vtCode         String?
   production     Float    @default(0)
   cajaComun      Float    @default(0)
   sobrante       Float    @default(0)

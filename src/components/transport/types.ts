@@ -16,6 +16,7 @@ export interface RecordFormData {
   km: string;
   conductor: string;
   ayudanteNombre: string;
+  vtCode: string;
   trips: TripData[];
   expenses: ExpenseData[];
   tickets: string;
@@ -28,6 +29,7 @@ export interface SavedRecord {
   km: string | null;
   conductor: string | null;
   ayudanteNombre: string | null;
+  vtCode: string | null;
   production: number;
   cajaComun: number;
   sobrante: number;
@@ -60,7 +62,7 @@ export interface UserSession {
   rol: string;
 }
 
-export type AppView = 'home' | 'form' | 'history' | 'reports' | 'personal';
+export type AppView = 'home' | 'form' | 'history' | 'reports' | 'personal' | 'vtconfig';
 
 export function num(v: string): number {
   return parseFloat(v) || 0;
@@ -84,16 +86,10 @@ export function createEmptyFormData(): RecordFormData {
   return {
     date: new Date().toISOString().split('T')[0],
     km: '',
-    conductor: 'Jymmi Vera',
-    ayudanteNombre: 'Jorge Cabrera',
-    trips: [
-      { routeFrom: 'Loja', routeTo: 'Vilcabamba', time: '', income: '0', boletos: '0' },   // Frec 1 - impar
-      { routeFrom: 'Vilcabamba', routeTo: 'Loja', time: '', income: '0', boletos: '0' },   // Frec 2 - par
-      { routeFrom: 'Loja', routeTo: 'Vilcabamba', time: '', income: '0', boletos: '0' },   // Frec 3 - impar
-      { routeFrom: 'Vilcabamba', routeTo: 'Loja', time: '', income: '0', boletos: '0' },   // Frec 4 - par
-      { routeFrom: 'Loja', routeTo: 'Vilcabamba', time: '', income: '0', boletos: '0' },   // Frec 5 - impar
-      { routeFrom: 'Vilcabamba', routeTo: 'Loja', time: '', income: '0', boletos: '0' },   // Frec 6 - par
-    ],
+    conductor: '',
+    ayudanteNombre: '',
+    vtCode: '',
+    trips: [],
     expenses: [
       { description: 'Chofer', amount: '30' },
       { description: 'Ayudante', amount: '20' },

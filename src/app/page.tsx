@@ -9,6 +9,7 @@ import { ComprobanteModal } from '@/components/transport/ComprobanteModal';
 import { LoginScreen } from '@/components/transport/LoginScreen';
 import { PersonalScreen } from '@/components/transport/PersonalScreen';
 import { ReportsScreen } from '@/components/transport/ReportsScreen';
+import { VTConfigScreen } from '@/components/transport/VTConfigScreen';
 import { type AppView, type RecordFormData, type SavedRecord, type UserSession, num } from '@/components/transport/types';
 import { useToast } from '@/hooks/use-toast';
 
@@ -71,6 +72,7 @@ export default function Home() {
           km: data.km,
           conductor: data.conductor,
           ayudanteNombre: data.ayudanteNombre,
+          vtCode: data.vtCode || null,
           tickets: num(data.tickets),
           sobrante: num(data.sobrante),
           trips: data.trips.map(t => ({
@@ -154,6 +156,15 @@ export default function Home() {
     );
   }
 
+  // VT Config screen (admin only)
+  if (view === 'vtconfig') {
+    return (
+      <VTConfigScreen
+        onBack={() => setView('home')}
+      />
+    );
+  }
+
   switch (view) {
     case 'form':
       return (
@@ -181,6 +192,7 @@ export default function Home() {
           onGoToHistory={() => setView('history')}
           onGoToPersonal={() => setView('personal')}
           onGoToReports={() => setView('reports')}
+          onGoToVtConfig={() => setView('vtconfig')}
           onLogout={handleLogout}
           recordCount={recordCount}
         />
