@@ -37,23 +37,19 @@ export function RecordForm({ saving, error, onBack, onSave }: RecordFormProps) {
   const [selectedVtId, setSelectedVtId] = useState('');
   const [vtsLoaded, setVtsLoaded] = useState(false);
 
-  // Load VTs from API - auto-seed if empty
+  // Load VTs from API - always run seed to ensure data is up to date
   useEffect(() => {
     if (vtsLoaded) return;
-    fetch('/api/bus-vts').then(r => r.json()).then(async data => {
-      if (Array.isArray(data) && data.length === 0) {
-        // No VTs - try to seed
-        try {
-          await fetch('/api/seed-vts', { method: 'POST' });
-          const res2 = await fetch('/api/bus-vts');
-          const data2 = await res2.json();
-          if (Array.isArray(data2)) setVts(data2);
-        } catch { /* seed failed */ }
-      } else if (Array.isArray(data)) {
-        setVts(data);
-      }
+    (async () => {
+      try {
+        // Always run seed (upsert - safe to run multiple times)
+        await fetch('/api/seed-vts', { method: 'POST' });
+        const res = await fetch('/api/bus-vts');
+        const data = await res.json();
+        if (Array.isArray(data)) setVts(data);
+      } catch { /* ignore */ }
       setVtsLoaded(true);
-    }).catch(() => setVtsLoaded(true));
+    })();
   }, [vtsLoaded]);
 
   // Load current conductor and ayudante from DB
