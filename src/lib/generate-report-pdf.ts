@@ -2,6 +2,9 @@
  * Generador de PDF de Reportes Consolidados (A4)
  * Formatos: Diario, Semanal, Mensual, por Conductor
  * Paleta corporativa: Rojo Vinotinto #912D26, Gris Antracita #3A3A3A, Plata #D6D6D6, White
+ *
+ * Diseño aprobado: 3 bloques en Resumen Ejecutivo (Ingresos / Egresos / Entregas)
+ * Sin seccion "SUMATORIA DE ENTREGAS" redundante
  */
 
 const COLORS = {
@@ -12,10 +15,6 @@ const COLORS = {
   lightRed: [245, 235, 234] as const,
   green: [34, 139, 34] as const,
 };
-
-function rgb(c: readonly number[]): string {
-  return `rgb(${c[0]}, ${c[1]}, ${c[2]})`;
-}
 
 function formatDate(dateStr: string): string {
   const [y, m, d] = dateStr.split('-');
@@ -36,6 +35,8 @@ interface DailySummary {
   totalEntregaCompania: number;
   totalEntregaAyudante: number;
   totalTickets: number;
+  totalCajaComun: number;
+  totalSobrante: number;
 }
 
 interface ReportData {
@@ -50,6 +51,8 @@ interface ReportData {
     entregaCompania: number;
     entregaAyudante: number;
     tickets: number;
+    cajaComun: number;
+    sobrante: number;
     recordCount: number;
     daysWorked: number;
   };
@@ -76,9 +79,9 @@ export async function generateReportPDF(data: ReportData): Promise<Blob> {
 
   const doc = new jsPDF({ unit: 'mm', format: 'a4' });
   const w = 210;
-  const ml = 15; // margin left
-  const mr = 15; // margin right
-  const cw = w - ml - mr; // content width
+  const ml = 15;
+  const mr = 15;
+  const cw = w - ml - mr;
   let y = 0;
 
   // Helper: text
@@ -110,6 +113,22 @@ export async function generateReportPDF(data: ReportData): Promise<Blob> {
     doc.line(x1, yy, x2, yy);
   };
 
+  // Helper: draw a card with label + value
+  const drawCard = (cx: number, cy: number, cw2: number, ch: number, label: string, value: string, valueColor: readonly number[]) => {
+    doc.setFillColor(...COLORS.lightRed);
+    doc.roundedRect(cx, cy, cw2, ch, 3, 3, 'F');
+    addText(label, cx + 3, cy + 5, { size: 7, color: COLORS.dark });
+    addText(value, cx + 3, cy + 14, { size: 11, color: valueColor, bold: true });
+  };
+
+  // Helper: draw block title
+  const drawBlockTitle = (title: string) => {
+    addText(title, ml, y, { size: 9, color: COLORS.primary, bold: true });
+    y += 2;
+    addLine(ml, w - mr, y);
+    y += 4;
+  };
+
   // ============================
   // HEADER BAND
   // ============================
@@ -133,64 +152,68 @@ export async function generateReportPDF(data: ReportData): Promise<Blob> {
   y += 18;
 
   // ============================
-  // RESUMEN EJECUTIVO
+  // RESUMEN EJECUTIVO — 3 bloques
   // ============================
   addText('RESUMEN EJECUTIVO', ml, y, { size: 12, color: COLORS.primary, bold: true });
   y += 2;
   addLine(ml, w - mr, y);
   y += 6;
 
-  // Summary cards - 2x3 grid
   const cardW = (cw - 8) / 3;
   const cardH = 22;
-  const summaryCards = [
-    { label: 'Produccion Total', value: formatMoney(data.totals.production), color: COLORS.primary },
+  const gap = 4;
+  const totalIngresos = data.totals.production + data.totals.cajaComun;
+  const totalEgresos = data.totals.gastos + data.totals.tickets;
+
+  // ---- BLOQUE 1: INGRESOS ----
+  drawBlockTitle('INGRESOS');
+  const ingresoCards: { label: string; value: string; color: readonly number[] }[] = [
+    { label: 'Total Ingresos', value: formatMoney(totalIngresos), color: COLORS.primary },
+    { label: 'Total Produccion', value: formatMoney(data.totals.production), color: COLORS.dark },
+    { label: 'Total Caja Comun', value: formatMoney(data.totals.cajaComun), color: COLORS.dark },
+  ];
+  // Sobrante only if non-zero
+  if (data.totals.sobrante !== 0) {
+    ingresoCards.push({ label: 'Total Sobrante', value: formatMoney(data.totals.sobrante), color: COLORS.green });
+  }
+
+  const ingresoCols = ingresoCards.length >= 4 ? 4 : 3;
+  const ingresoCardW = ingresoCards.length >= 4 ? (cw - gap * 3) / 4 : cardW;
+  ingresoCards.forEach((card, i) => {
+    const cx = ml + i * (ingresoCardW + gap);
+    drawCard(cx, y, ingresoCardW, cardH, card.label, card.value, card.color);
+  });
+  y += cardH + 8;
+
+  // ---- BLOQUE 2: EGRESOS ----
+  drawBlockTitle('EGRESOS');
+  const egresoCards: { label: string; value: string; color: readonly number[] }[] = [
+    { label: 'Total Egresos', value: formatMoney(totalEgresos), color: COLORS.dark },
     { label: 'Total Gastos', value: formatMoney(data.totals.gastos), color: COLORS.dark },
-    { label: 'Km Recorridos', value: `${data.totals.km.toFixed(0)} km`, color: COLORS.dark },
+    { label: 'Total Tickets', value: formatMoney(data.totals.tickets), color: COLORS.dark },
+  ];
+  const egresoCols = 3;
+  const egresoCardW = (cw - gap * 2) / 3;
+  egresoCards.forEach((card, i) => {
+    const cx = ml + i * (egresoCardW + gap);
+    drawCard(cx, y, egresoCardW, cardH, card.label, card.value, card.color);
+  });
+  y += cardH + 8;
+
+  // ---- BLOQUE 3: ENTREGAS ----
+  drawBlockTitle('ENTREGAS');
+  const entregaCards: { label: string; value: string; color: readonly number[] }[] = [
     { label: 'Entrega Compania', value: formatMoney(data.totals.entregaCompania), color: COLORS.primary },
     { label: 'Entrega Ayudante', value: formatMoney(data.totals.entregaAyudante), color: COLORS.primary },
+    { label: 'Total Entregado', value: formatMoney(data.totals.entregaCompania + data.totals.entregaAyudante), color: COLORS.primary },
     { label: 'Dias Trabajados', value: `${data.totals.daysWorked}`, color: COLORS.dark },
   ];
-
-  summaryCards.forEach((card, i) => {
-    const col = i % 3;
-    const row = Math.floor(i / 3);
-    const cx = ml + col * (cardW + 4);
-    const cy = y + row * (cardH + 4);
-
-    // Card background
-    doc.setFillColor(...COLORS.lightRed);
-    doc.roundedRect(cx, cy, cardW, cardH, 3, 3, 'F');
-
-    // Label
-    addText(card.label, cx + 3, cy + 5, { size: 7, color: COLORS.dark });
-    // Value
-    addText(card.value, cx + 3, cy + 14, { size: 11, color: card.color, bold: true });
+  const entregaCardW = (cw - gap * 3) / 4;
+  entregaCards.forEach((card, i) => {
+    const cx = ml + i * (entregaCardW + gap);
+    drawCard(cx, y, entregaCardW, cardH, card.label, card.value, card.color);
   });
-
-  y += (cardH + 4) * 2 + 4;
-
-  // ============================
-  // SUMATORIA DE ENTREGAS
-  // ============================
-  const boxH = 28;
-  doc.setFillColor(...COLORS.dark);
-  doc.roundedRect(ml, y, cw, boxH, 3, 3, 'F');
-
-  addText('SUMATORIA DE ENTREGAS', ml + 4, y + 7, { size: 10, color: COLORS.white, bold: true });
-
-  // Two columns inside box
-  const halfW = (cw - 20) / 3;
-  addText('Entrega Compania:', ml + 4, y + 14, { size: 8, color: [200, 200, 200] });
-  addText(formatMoney(data.totals.entregaCompania), ml + 4, y + 20, { size: 10, color: COLORS.white, bold: true });
-
-  addText('Entrega Ayudante:', ml + 4 + halfW + 4, y + 14, { size: 8, color: [200, 200, 200] });
-  addText(formatMoney(data.totals.entregaAyudante), ml + 4 + halfW + 4, y + 20, { size: 10, color: COLORS.white, bold: true });
-
-  addText('Total Entregado:', ml + 4 + (halfW + 4) * 2, y + 14, { size: 8, color: [200, 200, 200] });
-  addText(formatMoney(data.totals.entregaCompania + data.totals.entregaAyudante), ml + 4 + (halfW + 4) * 2, y + 20, { size: 10, color: COLORS.primary, bold: true });
-
-  y += boxH + 6;
+  y += cardH + 6;
 
   // ============================
   // VALIDACION
@@ -221,8 +244,8 @@ export async function generateReportPDF(data: ReportData): Promise<Blob> {
   addLine(ml, w - mr, y);
   y += 4;
 
-  // Table header
-  const colWidths = [22, 28, 28, 28, 28, 28, 28];
+  // Table header: Fecha | Produccion | Gastos | E.Compa | E.Ayuda | Total Ent | Km
+  const colWidths = [22, 27, 27, 27, 27, 27, 27];
   const colLabels = ['Fecha', 'Produccion', 'Gastos', 'E. Compania', 'E. Ayudante', 'Total Ent.', 'Km'];
   const colAlign: ('left' | 'right')[] = ['left', 'right', 'right', 'right', 'right', 'right', 'right'];
 
@@ -241,7 +264,6 @@ export async function generateReportPDF(data: ReportData): Promise<Blob> {
   // Data rows
   data.dailySummaries.forEach((day, idx) => {
     const rowH = 6;
-    // Alternate row bg
     if (idx % 2 === 0) {
       doc.setFillColor(...COLORS.lightRed);
       tx = ml;
@@ -324,7 +346,6 @@ export async function generateReportPDF(data: ReportData): Promise<Blob> {
         const tripCols = [10, 50, 50, 35, 35];
         const tripHeaders = ['#', 'Ruta', 'Retorno', 'Produccion', 'Caja Com.'];
 
-        // Trip header
         doc.setFillColor(...COLORS.dark);
         let ttx = ml;
         tripCols.forEach((cwi, i) => {
@@ -360,6 +381,12 @@ export async function generateReportPDF(data: ReportData): Promise<Blob> {
         ttx += 35;
         addText(formatMoney(tripTotalCaja), ttx + 2, y + 0.5, { size: 7, color: COLORS.dark, bold: true });
         y += 7;
+
+        // Sobrante (only if non-zero)
+        if (record.sobrante && record.sobrante !== 0) {
+          addText(`Sobrante: ${formatMoney(record.sobrante)}`, ml, y + 0.5, { size: 7, color: COLORS.green, bold: true });
+          y += 6;
+        }
       }
 
       // Expenses
@@ -384,7 +411,6 @@ export async function generateReportPDF(data: ReportData): Promise<Blob> {
   // ============================
   // FOOTER
   // ============================
-  // Add footer on every page
   const totalPages = doc.getNumberOfPages();
   for (let p = 1; p <= totalPages; p++) {
     doc.setPage(p);
