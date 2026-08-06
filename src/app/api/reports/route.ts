@@ -79,6 +79,7 @@ export async function GET(req: NextRequest) {
       const totalEntregaCompania = recs.reduce((s, r) => s + r.entregaCompania, 0);
       const totalEntregaAyudante = recs.reduce((s, r) => s + r.entregaAyudante, 0);
       const totalTickets = recs.reduce((s, r) => s + r.tickets, 0);
+      const totalCajaComun = recs.reduce((s, r) => s + r.cajaComun, 0);
       return {
         date,
         records: recs,
@@ -89,6 +90,7 @@ export async function GET(req: NextRequest) {
         totalEntregaCompania,
         totalEntregaAyudante,
         totalTickets,
+        totalCajaComun,
       };
     });
 
@@ -113,6 +115,7 @@ export async function GET(req: NextRequest) {
         entregaCompania: records.reduce((s, r) => s + r.entregaCompania, 0),
         entregaAyudante: records.reduce((s, r) => s + r.entregaAyudante, 0),
         tickets: records.reduce((s, r) => s + r.tickets, 0),
+        cajaComun: records.reduce((s, r) => s + r.cajaComun, 0),
         recordCount: records.length,
         daysWorked: dailySummaries.length,
       },

@@ -195,15 +195,16 @@ export async function generateReportPDF(data: ReportData): Promise<Blob> {
   // ============================
   // VALIDACION
   // ============================
-  const utilidad = data.totals.production - data.totals.gastos;
-  const totalEntregado = data.totals.entregaCompania + data.totals.entregaAyudante;
-  const cuadra = Math.abs(utilidad - totalEntregado) < 0.01;
+  // Formula: (Produccion + CajaComun - Gastos - Tickets) = (Ent. Ayudante + Ent. Compania)
+  const saldoA = data.totals.production + data.totals.cajaComun - data.totals.gastos - data.totals.tickets;
+  const saldoB = data.totals.entregaAyudante + data.totals.entregaCompania;
+  const cuadra = Math.abs(saldoA - saldoB) < 0.01;
 
   addText('VALIDACION', ml, y, { size: 9, color: COLORS.primary, bold: true });
   y += 5;
-  addText(`Produccion (${formatMoney(data.totals.production)}) - Gastos (${formatMoney(data.totals.gastos)}) = ${formatMoney(utilidad)}`, ml, y, { size: 8, color: COLORS.dark });
+  addText(`(Produccion ${formatMoney(data.totals.production)} + Caja Com. ${formatMoney(data.totals.cajaComun)}) - (Gastos ${formatMoney(data.totals.gastos)} + Tickets ${formatMoney(data.totals.tickets)}) = ${formatMoney(saldoA)}`, ml, y, { size: 7, color: COLORS.dark });
   y += 4;
-  addText(`Ent. Compania (${formatMoney(data.totals.entregaCompania)}) + Ent. Ayudante (${formatMoney(data.totals.entregaAyudante)}) = ${formatMoney(totalEntregado)}`, ml, y, { size: 8, color: COLORS.dark });
+  addText(`Ent. Ayudante (${formatMoney(data.totals.entregaAyudante)}) + Ent. Compania (${formatMoney(data.totals.entregaCompania)}) = ${formatMoney(saldoB)}`, ml, y, { size: 7, color: COLORS.dark });
   y += 4;
   addText(cuadra ? 'Cuadra correctamente' : 'DESCUADRE - verificar registros', ml, y, {
     size: 8,
