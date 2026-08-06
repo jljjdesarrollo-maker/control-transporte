@@ -139,7 +139,7 @@ export function ReportsScreen({ onBack }: ReportsScreenProps) {
     { key: 'diario', label: 'Diario', icon: 'Dia', desc: 'Cierre de caja de un dia' },
     { key: 'semanal', label: 'Semanal', icon: 'Sem', desc: 'Resumen de la semana' },
     { key: 'mensual', label: 'Mensual', icon: 'Mes', desc: 'Resumen del mes' },
-    { key: 'conductor', label: 'Conductor', icon: 'Cond', desc: 'Rendimiento por conductor' },
+    { key: 'conductor', label: 'Ayudante', icon: 'Ayud', desc: 'Rendimiento por ayudante' },
   ];
 
   return (
@@ -221,7 +221,7 @@ export function ReportsScreen({ onBack }: ReportsScreenProps) {
 
             {reportType === 'conductor' && conductorNames.length > 0 && (
               <div className="space-y-2">
-                <label className="text-xs font-medium text-[#3A3A3A]/70">Conductor</label>
+                <label className="text-xs font-medium text-[#3A3A3A]/70">Ayudante</label>
                 <div className="flex flex-wrap gap-2">
                   <button
                     onClick={() => setConductorName('')}

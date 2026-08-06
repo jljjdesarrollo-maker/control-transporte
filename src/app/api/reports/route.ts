@@ -50,7 +50,7 @@ export async function GET(req: NextRequest) {
       where.date = { gte: startDate, lte: endDate };
     }
     if (conductorId) {
-      where.conductor = conductorId;
+      where.ayudanteNombre = conductorId;
     }
 
     // Fetch records with trips and expenses
@@ -96,14 +96,14 @@ export async function GET(req: NextRequest) {
       };
     });
 
-    // Get unique conductors for conductor filter
-    const allConductors = await db.dailyRecord.findMany({
-      select: { conductor: true },
-      distinct: ['conductor'],
-      where: { conductor: { not: null } },
+    // Get unique ayudantes for filter
+    const allAyudantes = await db.dailyRecord.findMany({
+      select: { ayudanteNombre: true },
+      distinct: ['ayudanteNombre'],
+      where: { ayudanteNombre: { not: null } },
     });
 
-    const conductorNames = allConductors.map(c => c.conductor).filter(Boolean);
+    const conductorNames = allAyudantes.map(c => c.ayudanteNombre).filter(Boolean);
 
     return NextResponse.json({
       type,
