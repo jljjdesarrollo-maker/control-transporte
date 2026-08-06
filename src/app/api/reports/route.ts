@@ -18,7 +18,7 @@ export async function GET(req: NextRequest) {
     if (type === 'diario' && date) {
       startDate = date;
       endDate = date;
-    } else if (type === 'semana' && !from) {
+    } else if (type === 'semanal' && !from) {
       // Default: current week (Mon-Sun)
       const today = new Date();
       const dayOfWeek = today.getDay();
