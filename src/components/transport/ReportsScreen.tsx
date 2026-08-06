@@ -1,13 +1,13 @@
 'use client';
 
 import { useState } from 'react';
-import { ArrowLeft, FileText, Calendar, Loader2, Download, Share2 } from 'lucide-react';
+import { ArrowLeft, FileText, Calendar, Loader2, Share2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 
-type ReportType = 'diario' | 'semanal' | 'mensual' | 'conductor';
+type ReportType = 'diario' | 'semanal' | 'mensual' | 'conductor' | 'rango';
 
 interface ReportsScreenProps {
   onBack: () => void;
@@ -19,16 +19,18 @@ export function ReportsScreen({ onBack }: ReportsScreenProps) {
   const [month, setMonth] = useState<string>('');
   const [conductorName, setConductorName] = useState<string>('');
   const [conductorNames, setConductorNames] = useState<string[]>([]);
+  const [rangeFrom, setRangeFrom] = useState<string>('');
+  const [rangeTo, setRangeTo] = useState<string>('');
   const [generating, setGenerating] = useState(false);
   const [noData, setNoData] = useState(false);
   const { toast } = useToast();
 
-  // Fetch conductor names on mount
+  // Fetch ayudante names on mount
   useState(() => {
     fetch('/api/records')
       .then(r => r.json())
       .then((records: any[]) => {
-        const names = [...new Set(records.map((r: any) => r.conductor).filter(Boolean))] as string[];
+        const names = [...new Set(records.map((r: any) => r.ayudanteNombre).filter(Boolean))] as string[];
         setConductorNames(names);
       })
       .catch(() => {});
@@ -52,6 +54,9 @@ export function ReportsScreen({ onBack }: ReportsScreenProps) {
       } else if (reportType === 'conductor') {
         params.set('conductorId', conductorName);
         if (month) params.set('month', month);
+      } else if (reportType === 'rango') {
+        params.set('from', rangeFrom);
+        params.set('to', rangeTo);
       }
 
       const res = await fetch(`/api/reports?${params.toString()}`);
@@ -77,6 +82,7 @@ export function ReportsScreen({ onBack }: ReportsScreenProps) {
       if (reportType === 'diario') filename += `_${date}`;
       else if (reportType === 'mensual' && month) filename += `_${month}`;
       else if (reportType === 'conductor') filename += `_${conductorName || 'todos'}`;
+      else if (reportType === 'rango') filename += `_${rangeFrom}_${rangeTo}`;
       a.download = `${filename}.pdf`;
       document.body.appendChild(a);
       a.click();
@@ -93,7 +99,6 @@ export function ReportsScreen({ onBack }: ReportsScreenProps) {
   };
 
   const handleShareWhatsApp = async () => {
-    // Generate summary text for WhatsApp
     try {
       const params = new URLSearchParams();
       params.set('type', reportType);
@@ -103,6 +108,9 @@ export function ReportsScreen({ onBack }: ReportsScreenProps) {
       else if (reportType === 'conductor') {
         params.set('conductorId', conductorName);
         if (month) params.set('month', month);
+      } else if (reportType === 'rango') {
+        params.set('from', rangeFrom);
+        params.set('to', rangeTo);
       }
 
       const res = await fetch(`/api/reports?${params.toString()}`);
@@ -112,7 +120,7 @@ export function ReportsScreen({ onBack }: ReportsScreenProps) {
       const t = data.totals;
 
       const text = `*REPORTE DE TRANSPORTE*\n` +
-        `${reportType === 'diario' ? 'Fecha: ' + date : reportType === 'mensual' ? 'Mes: ' + (month || 'actual') : 'Periodo completo'}\n\n` +
+        `${reportType === 'diario' ? 'Fecha: ' + date : reportType === 'mensual' ? 'Mes: ' + (month || 'actual') : reportType === 'rango' ? `Del ${rangeFrom} al ${rangeTo}` : 'Periodo completo'}\n\n` +
         `Produccion Total: S/ ${t.production.toFixed(2)}\n` +
         `Total Gastos: S/ ${t.gastos.toFixed(2)}\n` +
         `Km Recorridos: ${t.km.toFixed(0)} km\n\n` +
@@ -140,7 +148,13 @@ export function ReportsScreen({ onBack }: ReportsScreenProps) {
     { key: 'semanal', label: 'Semanal', icon: 'Sem', desc: 'Resumen de la semana' },
     { key: 'mensual', label: 'Mensual', icon: 'Mes', desc: 'Resumen del mes' },
     { key: 'conductor', label: 'Ayudante', icon: 'Ayud', desc: 'Rendimiento por ayudante' },
+    { key: 'rango', label: 'Rango', icon: 'Rgo', desc: 'Desde una fecha hasta otra' },
   ];
+
+  // Disable generate button if range missing dates
+  const canGenerate = reportType === 'rango'
+    ? rangeFrom !== '' && rangeTo !== '' && rangeFrom <= rangeTo
+    : true;
 
   return (
     <div className="flex flex-col min-h-[100dvh] bg-[#FAFAFA]">
@@ -200,7 +214,7 @@ export function ReportsScreen({ onBack }: ReportsScreenProps) {
               </div>
             )}
 
-            {(reportType === 'semanal') && (
+            {reportType === 'semanal' && (
               <div className="flex items-center gap-2 p-3 rounded-xl bg-[#F5F5F5]">
                 <Calendar className="w-4 h-4 text-[#3A3A3A]/50" />
                 <p className="text-xs text-[#3A3A3A]/60">Se genera de lunes a domingo de la semana actual</p>
@@ -216,6 +230,28 @@ export function ReportsScreen({ onBack }: ReportsScreenProps) {
                   onChange={e => setMonth(e.target.value)}
                   className="h-11 rounded-xl border-[#D6D6D6]"
                 />
+              </div>
+            )}
+
+            {reportType === 'rango' && (
+              <div className="space-y-2">
+                <label className="text-xs font-medium text-[#3A3A3A]/70">Desde</label>
+                <Input
+                  type="date"
+                  value={rangeFrom}
+                  onChange={e => setRangeFrom(e.target.value)}
+                  className="h-11 rounded-xl border-[#D6D6D6]"
+                />
+                <label className="text-xs font-medium text-[#3A3A3A]/70">Hasta</label>
+                <Input
+                  type="date"
+                  value={rangeTo}
+                  onChange={e => setRangeTo(e.target.value)}
+                  className="h-11 rounded-xl border-[#D6D6D6]"
+                />
+                {rangeFrom && rangeTo && rangeFrom > rangeTo && (
+                  <p className="text-xs text-red-500">La fecha "desde" no puede ser mayor que "hasta"</p>
+                )}
               </div>
             )}
 
@@ -261,7 +297,7 @@ export function ReportsScreen({ onBack }: ReportsScreenProps) {
         <div className="space-y-2 pt-2">
           <Button
             onClick={handleGenerate}
-            disabled={generating || (reportType === 'conductor' && conductorNames.length === 0)}
+            disabled={generating || !canGenerate}
             className="w-full h-14 rounded-2xl text-base font-semibold bg-[#912D26] hover:bg-[#7A2520] text-white shadow-lg shadow-[#912D26]/20 active:scale-[0.98] transition-transform"
           >
             {generating ? (

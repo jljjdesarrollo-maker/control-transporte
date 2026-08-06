@@ -69,6 +69,8 @@ function getReportTitle(data: ReportData): string {
       return `Reporte Mensual - ${formatDate(data.startDate)} al ${formatDate(data.endDate)}`;
     case 'conductor':
       return `Reporte por Ayudante - ${formatDate(data.startDate)} al ${formatDate(data.endDate)}`;
+    case 'rango':
+      return `Reporte por Rango - ${formatDate(data.startDate)} al ${formatDate(data.endDate)}`;
     default:
       return 'Reporte de Control';
   }
