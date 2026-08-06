@@ -119,13 +119,15 @@ export function RecordForm({ saving, error, onBack, onSave }: RecordFormProps) {
   };
 
   const totals = useMemo(() => {
-    const production = form.trips.reduce((s, t) => s + num(t.income), 0);
+    const tripIncome = form.trips.reduce((s, t) => s + num(t.income), 0);
     const cajaComun = form.trips.reduce((s, t) => s + num(t.boletos), 0);
+    const sobrante = num(form.sobrante);
+    const production = tripIncome + sobrante;
     const totalGastos = form.expenses.reduce((s, e) => s + num(e.amount), 0);
     const tickets = num(form.tickets);
     const entregaAyudante = production - totalGastos;
     const entregaCompania = cajaComun - tickets;
-    return { production, cajaComun, totalGastos, tickets, entregaAyudante, entregaCompania };
+    return { production, cajaComun, sobrante, totalGastos, tickets, entregaAyudante, entregaCompania };
   }, [form]);
 
   const handleSave = () => {
@@ -367,6 +369,22 @@ export function RecordForm({ saving, error, onBack, onSave }: RecordFormProps) {
                   </div>
                 );
               })}
+
+              {/* Sobrante / Ajuste */}
+              <div className="pt-2 border-t border-[#D6D6D6]">
+                <div className="space-y-1">
+                  <Label className="text-xs font-medium text-[#3A3A3A]/60">Sobrante / Ajuste</Label>
+                  <Input
+                    type="number"
+                    inputMode="decimal"
+                    placeholder="0.00"
+                    value={form.sobrante}
+                    onChange={(e) => updateField('sobrante', e.target.value)}
+                    className="h-10 text-sm rounded-lg border-[#D6D6D6]"
+                  />
+                  <p className="text-[10px] text-[#3A3A3A]/40">Dinero sobrante al contar (positivo o negativo)</p>
+                </div>
+              </div>
             </CardContent>
           </Card>
 
@@ -411,6 +429,36 @@ export function RecordForm({ saving, error, onBack, onSave }: RecordFormProps) {
             </CardContent>
           </Card>
 
+          {/* 4. Tickets - despues de Gastos, antes del Resumen */}
+          <Card className="rounded-2xl border border-[#D6D6D6] bg-white">
+            <CardContent className="p-4">
+              <Label className="text-xs font-medium text-[#3A3A3A]/60 mb-3 block">Tickets</Label>
+              <div className="grid grid-cols-3 gap-3">
+                <button
+                  type="button"
+                  onClick={() => updateField('tickets', '4.50')}
+                  className={`h-14 rounded-xl text-base font-bold border-2 transition-all active:scale-95 ${form.tickets === '4.50' ? 'bg-[#912D26] border-[#912D26] text-white shadow-lg shadow-[#912D26]/20' : 'bg-white border-[#D6D6D6] text-[#3A3A3A] hover:border-[#912D26]'}`}
+                >
+                  $4.50
+                </button>
+                <button
+                  type="button"
+                  onClick={() => updateField('tickets', '6.00')}
+                  className={`h-14 rounded-xl text-base font-bold border-2 transition-all active:scale-95 ${form.tickets === '6.00' ? 'bg-[#912D26] border-[#912D26] text-white shadow-lg shadow-[#912D26]/20' : 'bg-white border-[#D6D6D6] text-[#3A3A3A] hover:border-[#912D26]'}`}
+                >
+                  $6.00
+                </button>
+                <button
+                  type="button"
+                  onClick={() => updateField('tickets', '')}
+                  className={`h-14 rounded-xl text-base font-bold border-2 transition-all active:scale-95 ${form.tickets === '' ? 'bg-[#3A3A3A] border-[#3A3A3A] text-white' : 'bg-white border-[#D6D6D6] text-[#3A3A3A]/40 hover:border-[#3A3A3A]'}`}
+                >
+                  Ninguno
+                </button>
+              </div>
+            </CardContent>
+          </Card>
+
           {/* 5. Resumen - en zona inferior para one-handed */}
           <Card className="rounded-2xl bg-[#3A3A3A] text-white">
             <CardContent className="p-4 space-y-3">
@@ -419,6 +467,12 @@ export function RecordForm({ saving, error, onBack, onSave }: RecordFormProps) {
                 <span className="text-white/60">Produccion</span>
                 <span className="font-semibold">S/ {totals.production.toFixed(2)}</span>
               </div>
+              {totals.sobrante !== 0 && (
+                <div className="flex justify-between text-sm">
+                  <span className="text-white/60">Sobrante</span>
+                  <span className="font-semibold text-[#4ADE80]">S/ {totals.sobrante.toFixed(2)}</span>
+                </div>
+              )}
               <div className="flex justify-between text-sm">
                 <span className="text-white/60">Caja Comun (Boletos)</span>
                 <span className="font-semibold">S/ {totals.cajaComun.toFixed(2)}</span>
@@ -447,36 +501,6 @@ export function RecordForm({ saving, error, onBack, onSave }: RecordFormProps) {
                 </span>
               </div>
               <p className="text-[10px] text-white/30">Caja Comun - Tickets</p>
-            </CardContent>
-          </Card>
-
-          {/* 4. Tickets - zona inferior para one-handed */}
-          <Card className="rounded-2xl border border-[#D6D6D6] bg-white">
-            <CardContent className="p-4">
-              <Label className="text-xs font-medium text-[#3A3A3A]/60 mb-3 block">Tickets</Label>
-              <div className="grid grid-cols-3 gap-3">
-                <button
-                  type="button"
-                  onClick={() => updateField('tickets', '4.50')}
-                  className={`h-14 rounded-xl text-base font-bold border-2 transition-all active:scale-95 ${form.tickets === '4.50' ? 'bg-[#912D26] border-[#912D26] text-white shadow-lg shadow-[#912D26]/20' : 'bg-white border-[#D6D6D6] text-[#3A3A3A] hover:border-[#912D26]'}`}
-                >
-                  $4.50
-                </button>
-                <button
-                  type="button"
-                  onClick={() => updateField('tickets', '6.00')}
-                  className={`h-14 rounded-xl text-base font-bold border-2 transition-all active:scale-95 ${form.tickets === '6.00' ? 'bg-[#912D26] border-[#912D26] text-white shadow-lg shadow-[#912D26]/20' : 'bg-white border-[#D6D6D6] text-[#3A3A3A] hover:border-[#912D26]'}`}
-                >
-                  $6.00
-                </button>
-                <button
-                  type="button"
-                  onClick={() => updateField('tickets', '')}
-                  className={`h-14 rounded-xl text-base font-bold border-2 transition-all active:scale-95 ${form.tickets === '' ? 'bg-[#3A3A3A] border-[#3A3A3A] text-white' : 'bg-white border-[#D6D6D6] text-[#3A3A3A]/40 hover:border-[#3A3A3A]'}`}
-                >
-                  Ninguno
-                </button>
-              </div>
             </CardContent>
           </Card>
 

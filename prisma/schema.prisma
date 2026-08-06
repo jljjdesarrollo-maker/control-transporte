@@ -15,6 +15,7 @@ model DailyRecord {
   ayudanteNombre String?
   production     Float    @default(0)
   cajaComun      Float    @default(0)
+  sobrante       Float    @default(0)
   tickets        Float    @default(0)
   entregaAyudante  Float  @default(0)
   entregaCompania  Float  @default(0)

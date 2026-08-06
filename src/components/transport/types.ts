@@ -19,6 +19,7 @@ export interface RecordFormData {
   trips: TripData[];
   expenses: ExpenseData[];
   tickets: string;
+  sobrante: string;
 }
 
 export interface SavedRecord {
@@ -29,6 +30,7 @@ export interface SavedRecord {
   ayudanteNombre: string | null;
   production: number;
   cajaComun: number;
+  sobrante: number;
   tickets: number;
   entregaAyudante: number;
   entregaCompania: number;
@@ -99,5 +101,6 @@ export function createEmptyFormData(): RecordFormData {
       { description: 'Plan Renova', amount: '68' },
     ],
     tickets: '',
+    sobrante: '',
   };
 }

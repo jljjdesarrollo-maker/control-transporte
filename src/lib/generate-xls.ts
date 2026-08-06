@@ -32,6 +32,7 @@ export async function generateXLS(records: SavedRecord[], filename: string): Pro
   headers.push(
     'Produccion',
     'Caja Comun',
+    'Sobrante',
     'Total Gastos',
   );
 
@@ -68,6 +69,7 @@ export async function generateXLS(records: SavedRecord[], filename: string): Pro
     // Summary
     row.push(record.production);
     row.push(record.cajaComun);
+    row.push(record.sobrante || 0);
     row.push(record.totalGastos);
 
     // Expenses

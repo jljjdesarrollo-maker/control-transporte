@@ -134,10 +134,18 @@ export async function generateComprobantePDF(record: SavedRecord): Promise<Blob>
   const summaryItems: { label: string; value: string; color: readonly number[] }[] = [
     { label: 'Produccion', value: record.production.toFixed(2), color: COLORS.white },
     { label: 'Caja Comun', value: record.cajaComun.toFixed(2), color: COLORS.white },
+  ];
+
+  // Show sobrante only if non-zero
+  if (record.sobrante !== undefined && record.sobrante !== 0) {
+    summaryItems.push({ label: 'Sobrante', value: record.sobrante.toFixed(2), color: COLORS.green });
+  }
+
+  summaryItems.push(
     { label: 'Tickets', value: record.tickets.toFixed(2), color: COLORS.white },
     { label: 'Entrega Ayudante', value: record.entregaAyudante.toFixed(2), color: record.entregaAyudante >= 0 ? COLORS.green : COLORS.red },
     { label: 'Entrega Compania', value: record.entregaCompania.toFixed(2), color: record.entregaCompania >= 0 ? COLORS.green : COLORS.red },
-  ];
+  );
 
   summaryItems.forEach((item) => {
     doc.setTextColor(200, 200, 200);

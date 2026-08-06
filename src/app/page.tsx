@@ -72,6 +72,7 @@ export default function Home() {
           conductor: data.conductor,
           ayudanteNombre: data.ayudanteNombre,
           tickets: num(data.tickets),
+          sobrante: num(data.sobrante),
           trips: data.trips.map(t => ({
             routeFrom: t.routeFrom,
             routeTo: t.routeTo,
