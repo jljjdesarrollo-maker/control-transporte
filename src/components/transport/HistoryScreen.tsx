@@ -63,7 +63,7 @@ export function HistoryScreen({ isAdmin, onBack, onViewRecord }: HistoryScreenPr
   const [allRecords, setAllRecords] = useState<SavedRecord[]>([]);
   const [loading, setLoading] = useState(true);
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
-  const [filter, setFilter] = useState<FilterType>('todos');
+  const [filter, setFilter] = useState<FilterType>('semana');
   const [monthValue, setMonthValue] = useState<string>('');
   const [exporting, setExporting] = useState(false);
 
