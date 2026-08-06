@@ -8,9 +8,16 @@ export async function GET() {
   try {
     const vts = await prisma.busVT.findMany({
       where: { activo: true },
-      orderBy: { codigo: 'asc' },
     });
-    return NextResponse.json(vts);
+
+    // Sort numerically by VT number
+    const sorted = vts.sort((a, b) => {
+      const numA = parseInt(a.codigo.replace('VT', '')) || 0;
+      const numB = parseInt(b.codigo.replace('VT', '')) || 0;
+      return numA - numB;
+    });
+
+    return NextResponse.json(sorted);
   } catch (error) {
     console.error('Error fetching VTs:', error);
     return NextResponse.json({ error: 'Error al obtener VTs' }, { status: 500 });
