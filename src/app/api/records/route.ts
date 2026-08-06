@@ -86,3 +86,28 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Error al crear registro' }, { status: 500 });
   }
 }
+
+export async function PATCH(req: NextRequest) {
+  try {
+    const body = await req.json();
+    const { id, date } = body;
+
+    if (!id || !date) {
+      return NextResponse.json({ error: 'Falta id o date' }, { status: 400 });
+    }
+
+    const record = await db.dailyRecord.update({
+      where: { id },
+      data: { date },
+      include: {
+        trips: { orderBy: { order: 'asc' } },
+        expenses: { orderBy: { order: 'asc' } },
+      },
+    });
+
+    return NextResponse.json(record);
+  } catch (error) {
+    console.error('Error updating record:', error);
+    return NextResponse.json({ error: 'Error al actualizar registro' }, { status: 500 });
+  }
+}

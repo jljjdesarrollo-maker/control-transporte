@@ -135,7 +135,14 @@ export default function Home() {
   }
 
   if (detailRecord) {
-    return <RecordDetail record={detailRecord} onBack={() => setDetailRecord(null)} />;
+    return (
+      <RecordDetail
+        record={detailRecord}
+        isAdmin={isAdmin}
+        onBack={() => setDetailRecord(null)}
+        onRecordUpdated={(updated) => setDetailRecord(updated)}
+      />
+    );
   }
 
   // Personal screen (admin only)
