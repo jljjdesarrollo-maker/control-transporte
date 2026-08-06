@@ -44,7 +44,8 @@ export function ComprobanteModal({ record, onClose }: ComprobanteModalProps) {
     const a = document.createElement('a');
     a.href = url;
     const dateStr = record.date.split('-').reverse().join('-');
-    a.download = `liquidacion_${dateStr}.pdf`;
+    const vtPart = record.vtCode ? `${record.vtCode}_` : '';
+    a.download = `liquidacion_${vtPart}${dateStr}.pdf`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
@@ -54,7 +55,9 @@ export function ComprobanteModal({ record, onClose }: ComprobanteModalProps) {
     if (!pdfBlob) return;
 
     const dateStr = record.date.split('-').reverse().join('-');
+    const vtLine = record.vtCode ? `🚌 VT: ${record.vtCode}\n` : '';
     const text = `📋 *Liquidación del ${dateStr}*\n` +
+      vtLine +
       `🚗 Conductor: ${record.conductor || '-'}\n` +
       `👷 Ayudante: ${record.ayudanteNombre || '-'}\n\n` +
       `💰 Producción: S/ ${record.production.toFixed(2)}\n` +
@@ -65,7 +68,8 @@ export function ComprobanteModal({ record, onClose }: ComprobanteModalProps) {
 
     // Try Web Share API with file attachment
     if (shareSupported && pdfBlob) {
-      const file = new File([pdfBlob], `liquidacion_${dateStr}.pdf`, { type: 'application/pdf' });
+      const vtPart = record.vtCode ? `${record.vtCode}_` : '';
+      const file = new File([pdfBlob], `liquidacion_${vtPart}${dateStr}.pdf`, { type: 'application/pdf' });
       if (navigator.canShare({ files: [file] })) {
         try {
           await navigator.share({
@@ -142,7 +146,8 @@ export function ComprobanteModal({ record, onClose }: ComprobanteModalProps) {
                   onClick={async () => {
                     if (!pdfBlob) return;
                     const dateStr = record.date.split('-').reverse().join('-');
-                    const file = new File([pdfBlob], `liquidacion_${dateStr}.pdf`, { type: 'application/pdf' });
+                    const vtPart = record.vtCode ? `${record.vtCode}_` : '';
+                    const file = new File([pdfBlob], `liquidacion_${vtPart}${dateStr}.pdf`, { type: 'application/pdf' });
                     try {
                       await navigator.share({ files: [file], title: `Liquidacion ${dateStr}` });
                     } catch { /* cancelled */ }

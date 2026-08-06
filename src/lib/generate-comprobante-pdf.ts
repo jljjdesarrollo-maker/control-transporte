@@ -47,14 +47,20 @@ export async function generateComprobantePDF(record: SavedRecord): Promise<Blob>
   };
 
   // ---- Header band ----
+  const headerHeight = record.vtCode ? 28 : 22;
   doc.setFillColor(...COLORS.primary);
-  doc.rect(0, 0, w, 22, 'F');
+  doc.rect(0, 0, w, headerHeight, 'F');
 
   addText('LIQUIDACION', w / 2, y + 4, { size: 11, color: COLORS.white, bold: true, align: 'center' });
   addText('DEL DIA', w / 2, y + 10, { size: 11, color: COLORS.white, bold: true, align: 'center' });
   y += 16;
   addText(formatDate(record.date), w / 2, y, { size: 9, color: COLORS.white, align: 'center' });
-  y += 8;
+  y += 5;
+  if (record.vtCode) {
+    addText(`VT: ${record.vtCode}`, w / 2, y, { size: 8, color: COLORS.plata, bold: true, align: 'center' });
+    y += 5;
+  }
+  y += 2;
 
   // ---- Conductor / Ayudante ----
   if (record.conductor || record.ayudanteNombre) {
@@ -164,7 +170,7 @@ export async function generateComprobantePDF(record: SavedRecord): Promise<Blob>
   // ---- Footer ----
   addText('Control Transporte', w / 2, y, { size: 6, color: COLORS.plata, align: 'center' });
   y += 3;
-  addText(`Reg: ${formatDate(record.createdAt.split('T')[0])}`, w / 2, y, { size: 5, color: COLORS.plata, align: 'center' });
+  addText(`Op: ${formatDate(record.date)}`, w / 2, y, { size: 5, color: COLORS.plata, align: 'center' });
 
   return doc.output('blob');
 }
