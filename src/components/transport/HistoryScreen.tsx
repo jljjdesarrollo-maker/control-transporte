@@ -67,9 +67,16 @@ export function HistoryScreen({ isAdmin, onBack, onViewRecord }: HistoryScreenPr
   const [monthValue, setMonthValue] = useState<string>('');
   const [exporting, setExporting] = useState(false);
 
+  const dateRange = useMemo(() => getDateRange(filter, monthValue), [filter, monthValue]);
+
   const fetchRecords = async () => {
+    setLoading(true);
     try {
-      const res = await fetch('/api/records');
+      const params = new URLSearchParams();
+      if (dateRange.from) params.set('from', dateRange.from);
+      if (dateRange.to) params.set('to', dateRange.to);
+      const query = params.toString() ? `?${params.toString()}` : '';
+      const res = await fetch(`/api/records${query}`);
       const data = await res.json();
       setAllRecords(Array.isArray(data) ? data : []);
     } catch {
@@ -79,24 +86,17 @@ export function HistoryScreen({ isAdmin, onBack, onViewRecord }: HistoryScreenPr
     }
   };
 
-  useEffect(() => { fetchRecords(); }, []);
-
-  const dateRange = useMemo(() => getDateRange(filter, monthValue), [filter, monthValue]);
+  useEffect(() => { fetchRecords(); }, [dateRange]);
 
   const filteredRecords = useMemo(() => {
-    if (filter === 'todos' && !monthValue) return allRecords;
-    return allRecords.filter(r => {
-      if (dateRange.from && r.date < dateRange.from) return false;
-      if (dateRange.to && r.date > dateRange.to) return false;
-      return true;
-    });
-  }, [allRecords, dateRange, filter, monthValue]);
+    return allRecords;
+  }, [allRecords]);
 
   const handleDelete = async () => {
     if (!deleteTarget) return;
     try {
       await fetch(`/api/records/${deleteTarget}`, { method: 'DELETE' });
-      setAllRecords(prev => prev.filter(r => r.id !== deleteTarget));
+      fetchRecords();
     } catch {
       console.error('Error deleting record');
     }

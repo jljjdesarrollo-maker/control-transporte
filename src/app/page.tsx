@@ -43,9 +43,9 @@ export default function Home() {
 
   const fetchCount = useCallback(async () => {
     try {
-      const res = await fetch('/api/records');
+      const res = await fetch('/api/records/count');
       const data = await res.json();
-      setRecordCount(Array.isArray(data) ? data.length : 0);
+      setRecordCount(data.count ?? 0);
     } catch { /* ignore */ }
   }, []);
 

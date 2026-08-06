@@ -29,7 +29,9 @@ export function VTConfigScreen({ onBack }: VTConfigScreenProps) {
   const { toast } = useToast();
 
   useEffect(() => {
-    fetch('/api/bus-vts')
+    // Seed + fetch VTs (seed runs here to ensure data is current)
+    fetch('/api/seed-vts', { method: 'POST' })
+      .then(() => fetch('/api/bus-vts'))
       .then(r => r.json())
       .then(data => {
         if (Array.isArray(data)) {
