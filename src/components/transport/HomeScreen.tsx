@@ -1,6 +1,7 @@
 'use client';
 
-import { History, Pencil, Truck, Users, LogOut, User, FileText } from 'lucide-react';
+import { useState } from 'react';
+import { History, Pencil, Truck, Users, LogOut, User, FileText, Database, Download, Loader2, Share2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import type { UserSession } from './types';
@@ -17,6 +18,47 @@ interface HomeScreenProps {
 }
 
 export function HomeScreen({ user, isAdmin, onGoToForm, onGoToHistory, onGoToPersonal, onGoToReports, onLogout, recordCount }: HomeScreenProps) {
+  const [backupLoading, setBackupLoading] = useState(false);
+
+  const handleBackup = async () => {
+    setBackupLoading(true);
+    try {
+      const res = await fetch('/api/backup');
+      if (!res.ok) throw new Error('Error al generar respaldo');
+      const data = await res.json();
+      const json = JSON.stringify(data, null, 2);
+      const blob = new Blob([json], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+
+      const dateStr = new Date().toISOString().split('T')[0];
+      const filename = `respaldo_${dateStr}.json`;
+
+      if (navigator.share) {
+        try {
+          const file = new File([blob], filename, { type: 'application/json' });
+          await navigator.share({
+            title: 'Respaldo BD - Control Transporte',
+            text: `Respaldo completo de ${data.summary?.totalRecords || 0} registros`,
+            files: [file],
+          });
+          return;
+        } catch { /* user cancelled, fallback to download */ }
+      }
+
+      // Fallback: download directly
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error('Backup error:', err);
+    } finally {
+      setBackupLoading(false);
+    }
+  };
   return (
     <div className="flex flex-col min-h-[100dvh] bg-white">
       {/* Header with user info */}
@@ -107,6 +149,33 @@ export function HomeScreen({ user, isAdmin, onGoToForm, onGoToHistory, onGoToPer
                 </div>
               </CardContent>
             </Card>
+
+            {/* Datos section */}
+            <div className="pt-2">
+              <p className="text-xs font-bold text-[#3A3A3A]/40 uppercase tracking-wider mb-2">Datos</p>
+            </div>
+
+            {/* Respaldo BD */}
+            <Card className="rounded-2xl border border-[#D6D6D6] bg-white">
+              <CardContent className="flex items-center gap-3 p-4">
+                <div className="w-10 h-10 rounded-xl bg-[#912D26]/10 flex items-center justify-center">
+                  <Database className="w-5 h-5 text-[#912D26]" />
+                </div>
+                <div className="flex-1">
+                  <p className="font-semibold text-[#3A3A3A]">Respaldo BD</p>
+                  <p className="text-xs text-[#3A3A3A]/60">Descargar copia completa (JSON)</p>
+                </div>
+                <Button
+                  onClick={handleBackup}
+                  disabled={backupLoading}
+                  size="sm"
+                  className="h-9 px-3 rounded-xl bg-[#912D26] hover:bg-[#7A2520] text-white text-xs font-medium"
+                >
+                  {backupLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Share2 className="w-4 h-4 mr-1" />}
+                  {backupLoading ? '...' : 'Descargar'}
+                </Button>
+              </CardContent>
+            </Card>
           </>
         )}
 
@@ -126,7 +195,7 @@ export function HomeScreen({ user, isAdmin, onGoToForm, onGoToHistory, onGoToPer
 
       {/* Footer */}
       <footer className="py-4 text-center text-xs text-[#3A3A3A]/40">
-        Transporte Control v2.3
+        Transporte Control v2.5
       </footer>
     </div>
   );
