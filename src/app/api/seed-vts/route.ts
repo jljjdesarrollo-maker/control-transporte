@@ -4,11 +4,11 @@ import { VT_DATA } from '@/lib/seed-vts';
 
 const prisma = new PrismaClient();
 
-// POST - seed VTs (only creates if not existing)
+// POST - seed VTs (upsert: crea o actualiza frecuencias)
 export async function POST() {
   try {
     let created = 0;
-    let skipped = 0;
+    let updated = 0;
 
     for (const vt of VT_DATA) {
       const existing = await prisma.busVT.findUnique({
@@ -16,7 +16,14 @@ export async function POST() {
       });
 
       if (existing) {
-        skipped++;
+        await prisma.busVT.update({
+          where: { codigo: vt.codigo },
+          data: {
+            nombre: vt.nombre,
+            frecuencias: vt.frecuencias as any,
+          },
+        });
+        updated++;
       } else {
         await prisma.busVT.create({
           data: {
@@ -31,9 +38,9 @@ export async function POST() {
     }
 
     return NextResponse.json({
-      message: `Seed completado: ${created} creados, ${skipped} ya existian`,
+      message: `Seed completado: ${created} creados, ${updated} actualizados`,
       created,
-      skipped,
+      updated,
       total: VT_DATA.length,
     });
   } catch (error) {
