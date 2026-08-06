@@ -146,27 +146,10 @@ export function RecordForm({ saving, error, onBack, onSave }: RecordFormProps) {
   const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file || !file.type.startsWith('image/')) return;
+    const reader = new FileReader();
+    reader.onload = (ev) => setPhotoPreview(ev.target?.result as string);
+    reader.readAsDataURL(file);
     e.target.value = '';
-
-    // Compress photo: max 800px, JPEG quality 0.6 (~50-150KB vs 2-8MB original)
-    const img = new Image();
-    img.onload = () => {
-      const MAX = 800;
-      let w = img.width;
-      let h = img.height;
-      if (w > MAX || h > MAX) {
-        if (w > h) { h = Math.round(h * MAX / w); w = MAX; }
-        else { w = Math.round(w * MAX / h); h = MAX; }
-      }
-      const canvas = document.createElement('canvas');
-      canvas.width = w;
-      canvas.height = h;
-      const ctx = canvas.getContext('2d');
-      ctx?.drawImage(img, 0, 0, w, h);
-      setPhotoPreview(canvas.toDataURL('image/jpeg', 0.6));
-    };
-    img.src = URL.createObjectURL(file);
-    URL.revokeObjectURL(img.src);
   };
 
   const totals = useMemo(() => {
