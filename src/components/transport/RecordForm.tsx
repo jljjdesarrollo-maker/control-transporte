@@ -538,7 +538,7 @@ export function RecordForm({ saving, error, onBack, onSave }: RecordFormProps) {
                 </div>
               </div>
               <p className="font-medium text-[#912D26]">
-                Va a entregar la Compania por caja comun <strong>S/ {totals.cajaComun.toFixed(2)}</strong> y valor a entregar el ayudante <strong>S/ {totals.entregaAyudante.toFixed(2)}</strong>. Es correcto?
+                Va a entregar la Compania <strong>S/ {totals.entregaCompania.toFixed(2)}</strong> y valor a entregar el ayudante <strong>S/ {totals.entregaAyudante.toFixed(2)}</strong>. Es correcto?
               </p>
             </AlertDialogDescription>
           </AlertDialogHeader>
