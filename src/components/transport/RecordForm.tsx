@@ -37,11 +37,19 @@ export function RecordForm({ saving, error, onBack, onSave }: RecordFormProps) {
   const [selectedVtId, setSelectedVtId] = useState('');
   const [vtsLoaded, setVtsLoaded] = useState(false);
 
-  // Load VTs from API
+  // Load VTs from API - auto-seed if empty
   useEffect(() => {
     if (vtsLoaded) return;
-    fetch('/api/bus-vts').then(r => r.json()).then(data => {
-      if (Array.isArray(data)) {
+    fetch('/api/bus-vts').then(r => r.json()).then(async data => {
+      if (Array.isArray(data) && data.length === 0) {
+        // No VTs - try to seed
+        try {
+          await fetch('/api/seed-vts', { method: 'POST' });
+          const res2 = await fetch('/api/bus-vts');
+          const data2 = await res2.json();
+          if (Array.isArray(data2)) setVts(data2);
+        } catch { /* seed failed */ }
+      } else if (Array.isArray(data)) {
         setVts(data);
       }
       setVtsLoaded(true);
@@ -229,7 +237,14 @@ export function RecordForm({ saving, error, onBack, onSave }: RecordFormProps) {
               <Label className="text-sm font-semibold text-[#3A3A3A] flex items-center gap-1.5">
                 Vehiculo Tipo (VT) del dia <span className="text-[#912D26]">*</span>
               </Label>
-              {vts.length > 0 ? (
+              {!vtsLoaded ? (
+                <p className="text-sm text-[#3A3A3A]/50 mt-1">Cargando VTs...</p>
+              ) : vts.length === 0 ? (
+                <div className="text-center py-3">
+                  <p className="text-sm text-[#912D26]">No hay VTs configurados</p>
+                  <p className="text-xs text-[#3A3A3A]/50 mt-1">Ejecuta el seed: POST /api/seed-vts</p>
+                </div>
+              ) : (
                 <div className="grid grid-cols-3 gap-2 mt-2">
                   {vts.map(vt => (
                     <button
@@ -246,8 +261,6 @@ export function RecordForm({ saving, error, onBack, onSave }: RecordFormProps) {
                     </button>
                   ))}
                 </div>
-              ) : (
-                <p className="text-sm text-[#3A3A3A]/50 mt-1">Cargando VTs...</p>
               )}
               {selectedVtId && (
                 <p className="text-xs text-[#912D26]/70 mt-1">
