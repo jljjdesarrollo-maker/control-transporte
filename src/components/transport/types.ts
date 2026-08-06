@@ -62,7 +62,7 @@ export interface UserSession {
   rol: string;
 }
 
-export type AppView = 'home' | 'form' | 'history' | 'reports' | 'personal' | 'vtconfig';
+export type AppView = 'home' | 'form' | 'history' | 'reports' | 'personal' | 'vtconfig' | 'compare';
 
 export function num(v: string): number {
   return parseFloat(v) || 0;

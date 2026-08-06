@@ -10,6 +10,7 @@ import { LoginScreen } from '@/components/transport/LoginScreen';
 import { PersonalScreen } from '@/components/transport/PersonalScreen';
 import { ReportsScreen } from '@/components/transport/ReportsScreen';
 import { VTConfigScreen } from '@/components/transport/VTConfigScreen';
+import { CompareFrequenciesScreen } from '@/components/transport/CompareFrequenciesScreen';
 import { type AppView, type RecordFormData, type SavedRecord, type UserSession, num } from '@/components/transport/types';
 import { useToast } from '@/hooks/use-toast';
 
@@ -165,6 +166,15 @@ export default function Home() {
     );
   }
 
+  // Compare Frequencies screen (all users)
+  if (view === 'compare') {
+    return (
+      <CompareFrequenciesScreen
+        onBack={() => setView('home')}
+      />
+    );
+  }
+
   switch (view) {
     case 'form':
       return (
@@ -193,6 +203,7 @@ export default function Home() {
           onGoToPersonal={() => setView('personal')}
           onGoToReports={() => setView('reports')}
           onGoToVtConfig={() => setView('vtconfig')}
+          onGoToCompare={() => setView('compare')}
           onLogout={handleLogout}
           recordCount={recordCount}
         />
